@@ -1,0 +1,407 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  line-height: 1.6;
+  background-color: #f8fafc;
+  color: #1e293b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.6s ease-out;
+}
+
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  animation: pageLoad 0.6s ease-out;
+}
+
+.log-in-page {
+  display: flex;
+  height: 100vh;
+  animation: pageLoad 0.6s ease-out;
+}
+
+.welcome-page {
+  flex: 1;
+  background: linear-gradient(180deg, #9747ff, #5b2b99 80.5%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 50px;
+  position: relative;
+}
+
+.welcome-to-eduplanner {
+  margin-top: 10px;
+  font-size: 52px;
+  font-weight: 600;
+}
+
+.welcome-content {
+  max-width: 400px;
+  color: #fff;
+  position: relative;
+  text-align: left;
+  animation: slideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.eduplanner-description {
+  font-size: 18px;
+  line-height: 1.5;
+  color: rgb(203, 213, 225);
+}
+
+.log-in-form {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  padding-left: 90px;
+  background: #fff;
+}
+
+.form-container {
+  max-width: 400px;
+  width: 100%;
+  animation: fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-header {
+  margin-bottom: 30px;
+}
+
+.log-in {
+  font-size: 36px;
+  font-weight: 600;
+  color: #090914;
+  margin-bottom: 10px;
+}
+
+.description {
+  font-size: 16px;
+  color: #52525b;
+}
+
+.input-email {
+  margin-bottom: 20px;
+}
+
+/* Input field styling */
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #090914;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #5B2B99;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+}
+
+.remember-me input {
+  margin-right: 10px;
+}
+
+.remember-me input[type="checkbox"] {
+  transition: border-color 0.3s ease;
+}
+
+.forgot-password {
+  font-size: 14px;
+  color: #9747ff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+  color: #9747FF;
+}
+
+.log-in-button {
+  width: 50%;
+  padding: 14px;
+  border-radius: 8px;
+  background-color: #9747ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 80px;
+  margin-bottom: 30px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.log-in-button:hover {
+  background-color: #8033FF;
+  transform: translateY(-2px);
+}
+
+.log-in-button:active {
+  transform: translateY(0);
+}
+
+.create-account {
+  text-align: left;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.create-account a {
+  color: #9747ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.create-account a:hover {
+  color: #9747FF;
+}
+
+/* Submit button styling - consistent between login and sign-in pages */
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #5B2B99; /* Main purple color */
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.submit-btn:hover {
+  background-color: #4d2480;
+}
+
+.submit-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(91, 43, 153, 0.3);
+}
+
+/* Button loading state (if needed) */
+.submit-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.submit-btn.loading::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: button-loading-spinner 0.8s linear infinite;
+}
+
+@keyframes button-loading-spinner {
+  from {
+    transform: translate(-50%, -50%) rotate(0turn);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(1turn);
+  }
+}
+
+/* Form actions container */
+.form-actions {
+  margin-top: 24px;
+}
+
+/* Consistent button styling across all forms */
+button[type="submit"],
+.primary-button {
+  background-color: #5B2B99;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover,
+.primary-button:hover {
+  background-color: #4d2480;
+}
+
+/* Back button styles */
+.back-button {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(-5px);
+}
+
+.back-button img {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover img {
+  transform: translateX(-3px);
+}
+
+.back-icon {
+  font-size: 20px;
+}
+
+/* Animation keyframes */
+@keyframes pageLoad {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .welcome-page, .log-in-form {
+    flex: none;
+    width: 100%;
+  }
+
+  .welcome-page {
+    height: 30vh;
+    min-height: 200px;
+  }
+
+  .welcome-content {
+    max-width: 100%;
+    padding: 0 20px;
+    text-align: center;
+  }
+
+  .welcome-to-eduplanner {
+    font-size: 32px;
+  }
+
+  .eduplanner-description {
+    font-size: 16px;
+  }
+
+  .log-in-form {
+    padding: 20px;
+    justify-content: center;
+  }
+
+  .form-container {
+    padding: 0 10px;
+  }
+
+  .back-button {
+    top: 16px;
+    left: 16px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .back-button img {
+    width: 16px;
+    height: 16px;
+  }
+
+  .log-in-button {
+    width: 100%;
+    margin-top: 40px;
+  }
+}

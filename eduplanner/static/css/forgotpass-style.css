@@ -1,0 +1,224 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8fafc;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forgot-password-container {
+    max-width: 480px;
+    width: 90%;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    position: relative;
+    animation: fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #64748b;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back-button:hover {
+    background: rgba(151, 71, 255, 0.08);
+    transform: translateX(-5px);
+    color: #9747ff;
+}
+
+.back-icon img {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
+}
+
+.back-button:hover img {
+    transform: translateX(-3px);
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 32px;
+    margin-top: 20px;
+}
+
+.form-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #090914;
+    margin-bottom: 10px;
+}
+
+.form-header p {
+    font-size: 16px;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.input-group {
+    margin-bottom: 24px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #090914;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+    font-size: 15px;
+    color: #090914;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #9747FF;
+    box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+}
+
+.reset-button {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    background-color: #9747ff;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.reset-button:hover {
+    background-color: #8033FF;
+    transform: translateY(-2px);
+}
+
+.reset-button:active {
+    transform: translateY(0);
+}
+
+.return-login {
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 24px;
+}
+
+.return-login a {
+    color: #9747ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.return-login a:hover {
+    color: #8033FF;
+    text-decoration: underline;
+}
+
+/* Animation keyframes */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .forgot-password-container {
+        padding: 30px 20px;
+        width: 85%;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .form-header h1 {
+        font-size: 24px;
+    }
+
+    .form-header p {
+        font-size: 14px;
+    }
+
+    .input-group input {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .reset-button {
+        padding: 12px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 360px) {
+    .forgot-password-container {
+        padding: 25px 15px;
+        width: 90%;
+    }
+
+    .form-header h1 {
+        font-size: 22px;
+    }
+
+    .back-button {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+}
+
+/* Fix for iOS */
+@supports (-webkit-touch-callout: none) {
+    body {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Fix for mobile keyboards */
+@media (max-height: 500px) {
+    body {
+        align-items: flex-start;
+        padding: 20px 0;
+    }
+
+    .forgot-password-container {
+        margin: 20px auto;
+    }
+}

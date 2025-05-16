@@ -1,0 +1,694 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+
+
+.sign-in-page {
+  display: flex;
+  height: 100vh;
+  animation: pageLoad 0.6s ease-out;
+  min-height: 100vh;
+}
+
+.welcome-page {
+  flex: 1;
+  background: linear-gradient(180deg, #9747ff, #5b2b99 80.5%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 50px;
+}
+
+.welcome-to-eduplanner {
+  margin-top: 10px;
+  font-size: 52px;
+  font-weight: 600;
+}
+
+.welcome-content {
+  max-width: 400px;
+  position: absolute;
+  color: #fff;
+  top: 220px;
+  text-align: left;
+  margin-top: 0;
+  animation: slideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.eduplanner-description {
+  font-size: 18px;
+  line-height: 1.5;
+  color: rgb(203, 213, 225);
+}
+
+.sign-in-form {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  background: #fff;
+  padding-left: 100px;
+}
+
+.form-container {
+  max-width: 350px;
+  width: 100%;
+  animation: fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-header {
+  margin-bottom: 20px;
+}
+
+.sign-in {
+  font-size: 36px;
+  font-weight: 600;
+  color: #090914;
+  margin-bottom: 10px;
+}
+
+.description {
+  font-size: 16px;
+  color: #52525b;
+}
+
+.input-email {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #090914;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 16px; /* Vertical, horizontal padding */
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 22px; /* Helps with vertical alignment */
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.input-group input:focus {
+  border-color: #5B2B99;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(91, 43, 153, 0.1);
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.sign-in-button {
+  width: 50%;
+  padding: 14px;
+  border-radius: 8px;
+  background-color: #9747ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 60px;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.sign-in-button:hover {
+  background-color: #8033FF;
+  transform: translateY(-2px);
+}
+
+.sign-in-button:active {
+  transform: translateY(0);
+}
+
+.create-account {
+  text-align: left;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.create-account a {
+  color: #9747ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.create-account a:hover {
+  color: #9747FF;
+}
+
+/* Back button styles */
+.back-button {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(-5px);
+}
+
+.back-button img {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover img {
+  transform: translateX(-3px);
+}
+
+.back-icon {
+  font-size: 20px;
+}
+
+.welcome-logo {
+  width: 80px;
+  height: auto;
+  margin-bottom: 24px;
+}
+
+.terms-agreement {
+  font-size: 14px;
+  color: #64748b;
+  text-align: left;
+}
+
+.terms-agreement a {
+  color: #9747ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.terms-agreement a:hover {
+  color: #8033FF;
+}
+
+/* Animation keyframes */
+@keyframes pageLoad {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .back-button {
+    top: 16px;
+    left: 16px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  .back-button img {
+    width: 16px;
+    height: 16px;
+  }
+
+  
+  .welcome-content {
+    top: 180px;
+    padding: 0 20px;
+  }
+  
+  .welcome-to-eduplanner {
+    font-size: 42px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .sign-in-form {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  .welcome-content {
+    padding: 0 40px;
+  }
+
+  .welcome-to-eduplanner {
+    font-size: 42px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sign-in-page {
+    flex-direction: column;
+  }
+
+  .welcome-page {
+    flex: none;
+    height: 40vh;
+    padding: 20px;
+  }
+
+  .welcome-content {
+    position: relative;
+    top: 0;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .sign-in-form {
+    flex: none;
+    height: 60vh;
+    padding: 20px;
+    justify-content: center;
+    overflow-y: auto;
+  }
+
+  .form-container {
+    padding: 20px;
+  }
+
+  .sign-in {
+    font-size: 28px;
+  }
+
+  .sign-in-button {
+    width: 100%;
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-page {
+    height: 35vh;
+  }
+
+  .welcome-to-eduplanner {
+    font-size: 32px;
+  }
+
+  .eduplanner-description {
+    font-size: 16px;
+  }
+
+  .sign-in-form {
+    height: 65vh;
+    padding: 16px;
+  }
+
+  .form-container {
+    padding: 16px;
+  }
+
+  .options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .input-group input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Device-specific fixes */
+@media (hover: none) and (pointer: coarse) {
+  .input-group input:focus {
+    font-size: 16px; /* Prevents zoom on mobile devices */
+  }
+  
+  .sign-in-button:hover {
+    transform: none; /* Removes hover effect on touch devices */
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  /* iOS-specific fixes */
+  .sign-in-page {
+    min-height: -webkit-fill-available;
+    height: -webkit-fill-available;
+  }
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+}
+
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-body {
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.modal-body h2 {
+  color: #1a3a63;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.modal-body p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+/* Base styles */
+.sign-in-page {
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Responsive breakpoints */
+@media screen and (max-width: 1200px) {
+  .welcome-to-eduplanner {
+    font-size: 42px;
+  }
+
+  .sign-in-form {
+    padding: 40px;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .welcome-page {
+    padding: 30px;
+  }
+
+  .welcome-content {
+    max-width: 340px;
+  }
+
+  .form-container {
+    max-width: 360px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .sign-in-page {
+    flex-direction: column;
+  }
+
+  .welcome-page {
+    height: 40vh;
+    min-height: 300px;
+  }
+
+  .welcome-content {
+    position: static;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .sign-in-form {
+    height: 60vh;
+    justify-content: flex-start;
+    padding-top: 40px;
+  }
+
+  .form-container {
+    max-width: 100%;
+    padding: 0 20px;
+  }
+
+  .sign-in-button {
+    width: 100%;
+  }
+
+  .options {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .welcome-page {
+    height: 35vh;
+    min-height: 250px;
+  }
+
+  .welcome-to-eduplanner {
+    font-size: 32px;
+  }
+
+  .eduplanner-description {
+    font-size: 14px;
+  }
+
+  .sign-in {
+    font-size: 24px;
+  }
+
+  .input-group input {
+    padding: 10px;
+  }
+}
+
+/* Add these styles to your existing CSS */
+
+.error-message-container {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.success-message-container {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.input-group.error input {
+  border-color: #ef4444;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  display: block;
+}
+
+/* Password input container */
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Style the password input */
+.password-input-container input {
+  width: 100%;
+  padding-right: 40px; /* Make space for the icon */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Position the toggle button inside the input */
+.toggle-password {
+  position: absolute;
+  right: 10px; /* Distance from right edge of input */
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2; /* Make sure it's above the input */
+  height: 36px;
+  width: 36px;
+}
+
+/* Style the Material Icons */
+.toggle-password .material-icons {
+  font-size: 20px;
+  color: #64748b; /* Gray color that works on white background */
+  transition: color 0.2s;
+}
+
+.toggle-password:hover .material-icons {
+  color: #334155; /* Darker on hover */
+}
+
+/* Fix for any focus ring issues */
+.toggle-password:focus {
+  outline: none;
+}
+
+.toggle-password:focus .material-icons {
+  color: #5B2B99; /* Your primary color */
+}
+
+.toggle-password:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Submit button styling - consistent between login and sign-in pages */
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #5B2B99; /* Main purple color */
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.submit-btn:hover {
+  background-color: #4d2480;
+}
+
+.submit-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(91, 43, 153, 0.3);
+}
+
+/* Button loading state (if needed) */
+.submit-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.submit-btn.loading::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: button-loading-spinner 0.8s linear infinite;
+}
+
+@keyframes button-loading-spinner {
+  from {
+    transform: translate(-50%, -50%) rotate(0turn);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(1turn);
+  }
+}
+
+/* Form actions container */
+.form-actions {
+  margin-top: 24px;
+}
+
+/* Consistent button styling across all forms */
+button[type="submit"],
+.primary-button {
+  background-color: #9747ff;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover,
+.primary-button:hover {
+  background-color: #8042d2;
+}

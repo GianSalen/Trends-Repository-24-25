@@ -1,0 +1,2233 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Navigation Bar */
+.navTop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 900; /* Was 1, changing to highest level */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navTop.scrolled {
+  background: white;
+  backdrop-filter: blur(8px);
+  padding: 12px 32px;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-pic {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-left: 10px;
+}
+
+.profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ProfileName {
+  font-weight: 600;
+  font-size: 14px;
+  color: #5B2B99;
+}
+
+.ProfilePosition {
+  font-weight: 400;
+  font-size: 12px;
+  color: #5B2B99;
+}
+
+.smalllogo {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+}
+
+.smalllogo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-left: auto;
+}
+
+.links a {
+  text-decoration: none;
+  font-size: 14px;
+  color: #5B2B99;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.links a:hover {
+  color: #9145f5;
+}
+
+
+.log-in {
+  padding: 8px 16px;
+  border: 2px solid #5B2B99;
+  color: #5B2B99;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+
+.log-in:hover {
+  color: #9145f5;
+  background: rgba(151, 71, 255, 0.1);
+}
+
+/* Hamburger Menu */
+.hamburger {
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.hamburger:hover {
+  background-color: rgba(151, 71, 255, 0.1);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  height: 100vh;
+  width: 320px;
+  background: white;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 950; /* Was 2, changing to just below navTop */
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 940; /* Was 4, needs to be below sidebar but above most elements */
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar-header {
+  padding: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close-btn {
+  font-size: 28px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.sidebar-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sidebar-profile .profile-pic {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  overflow: hidden;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-profile .profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar-profile .profile-info {
+  text-align: center;
+}
+
+.sidebar-menu {
+  padding: 20px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: #1e293b;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.menu-item:hover {
+  background: rgba(151, 71, 255, 0.1);
+  color: #9747FF;
+}
+
+.menu-item.active {
+  color: #9747FF;
+  background: rgba(151, 71, 255, 0.1);
+  font-weight: 500;
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.logout {
+  display: flex;
+  align-items: center;
+  color: #ef4444;
+  text-decoration: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Main Container */
+.maincontainer {
+  max-width: 1200px;
+  margin: 10px auto 28px;
+  padding: 0 10px;
+  animation: fadeIn 0.6s ease-out;
+  height: calc(100vh - 92px);
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 60px;
+  margin-top: 35px;
+  margin-bottom: 32px;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.view-timetables {
+  position: relative;
+}
+
+.view-button:hover {
+  background: #8033ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(151, 71, 255, 0.3);
+}
+
+.view-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(151, 71, 255, 0.2);
+}
+
+.view-button span.material-icons {
+  transition: transform 0.3s ease;
+}
+
+.view-button:hover span.material-icons {
+  transform: rotate(180deg);
+}
+
+
+.view-button {
+  background: #9747ff;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.timetable-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  display: none;
+  z-index: 1000; /* Was 10, making it a dropdown priority */
+}
+
+.timetable-dropdown.show {
+  display: block;
+  animation: slideDown 0.2s ease;
+}
+
+.timetable-item {
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.timetable-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.timetable-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.timetable-info small {
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.timetable-item:last-child {
+  border-bottom: none;
+}
+
+.timetable-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.load-button,
+.delete-button {
+  padding: 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.load-button {
+  background: #9747ff;
+  color: white;
+}
+
+.delete-button {
+  background: #ef4444;
+  color: white;
+}
+
+.load-button:hover {
+  background: #8033ff;
+}
+
+.delete-button:hover {
+  background: #dc2626;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Back button styles */
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #9747ff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: #a461fb;
+  transform: translateX(-5px);
+}
+
+.back-button img {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover img {
+  transform: translateX(-3px);
+}
+
+.back-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.back-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.back-text {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* Form column layout */
+.setup-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 24px;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #9747ff;
+  box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+  background-color: #ffffff;
+}
+
+/* Time input styling */
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background-color: #f8fafc;
+  font-size: 14px;
+  color: #1e293b;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+input[type="time"]:focus {
+  border-color: #9747ff;
+  outline: none;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+}
+
+/* Sections list styling */
+.sections-list {
+  max-height: 200px;
+  width: 100%;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+  background-color: #f8fafc;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+}
+
+.section-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color 0.2s ease;
+}
+
+.section-item:hover {
+  background-color: #f1f5f9;
+}
+
+.section-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-info span {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.section-info small {
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Button container styling */
+.button-container {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.create-button, .save-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #9747ff;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 180px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.create-button:hover, .save-button:hover {
+  background: #8033ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(151, 71, 255, 0.3);
+}
+
+.create-button:active, .save-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(151, 71, 255, 0.2);
+}
+
+.create-button:disabled, .save-button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Setup container styling */
+.setup-container {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 32px;
+  transition: all 0.3s ease;
+}
+
+.setup-container h2 {
+  font-size: 20px;
+  color: #1e293b;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Title wrapper styling */
+.title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+/* Title input styling */
+.title-input {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  margin-right: 20px;
+  background-color: transparent;
+  flex: 1;
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: #e2e8f0;
+  background-color: white;
+}
+
+/* School year selector styling */
+.school-year-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 0;
+  min-width: 200px;
+}
+
+.school-year-selector span {
+  font-weight: 500;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.year-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.year-input-group:focus-within {
+  border-color: #9747ff;
+  box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+  background-color: white;
+}
+
+.year-input {
+  width: 60px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  text-align: center;
+  color: #1e293b;
+  background-color: transparent;
+}
+
+.year-input::-webkit-inner-spin-button,
+.year-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.year-separator {
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Input hints */
+.input-hint {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Enhanced Tab Navigation Styling */
+.timetable-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0;
+  background-color: #f8fafc;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.timetable-tabs::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #e2e8f0;
+  z-index: 1;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 16px 28px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  flex-grow: 1;
+  text-align: center;
+  border-bottom: 3px solid transparent;
+  z-index: 9;
+}
+
+.tab-button:hover {
+  background-color: #f1f5f9;
+  color: #5B2B99;
+}
+
+.tab-button.active {
+  background-color: #fff;
+  color: #9747ff;
+  font-weight: 600;
+  border-bottom: 3px solid #9747ff;
+}
+
+.tab-button.active::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #9747ff;
+  opacity: 0.7;
+}
+
+.tab-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover::after {
+  background-color: rgba(151, 71, 255, 0.3);
+}
+
+.tab-button.active::after {
+  background-color: #9747ff;
+}
+
+/* Tab content transition */
+.tab-content {
+  display: none;
+  transition: all 0.4s ease;
+}
+
+.tab-content.active {
+  display: block;
+  animation: tab-fade-in 0.5s ease;
+}
+
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tab-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tab-fade-in {
+  animation: tab-fade-in 0.4s ease forwards;
+}
+
+/* Enhanced Day Selector Styling */
+.day-selector {
+  background-color: #f8fafc;
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.day-selector:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.day-selector label {
+  display: block;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 15px;
+  font-size: 16px;
+  position: relative;
+  padding-left: 24px;
+}
+
+.day-selector label::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 16px;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-left: 24px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 10px 16px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  margin-bottom: 0;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.checkbox-group label::before {
+  content: none;
+}
+
+.checkbox-group label:hover {
+  background-color: #f8f4ff;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+  border-color: #ddd6fe;
+}
+
+.checkbox-group label:active {
+  transform: translateY(0);
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #9747ff;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.checkbox-group input[type="checkbox"]:checked + span {
+  color: #6d28d9;
+  font-weight: 600;
+}
+
+/* Enhanced Section Selector Styling */
+.section-selector {
+  background-color: #f8fafc;
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.section-selector:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.section-selector label {
+  display: block;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 15px;
+  font-size: 16px;
+  position: relative;
+  padding-left: 24px;
+}
+
+.section-selector label::before {
+  content: '👥';
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 16px;
+}
+
+#weeklyViewSelect {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: white;
+  color: #334155;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M12 15l-4.243-4.243 1.415-1.414L12 12.172l2.828-2.829 1.415 1.414z' fill='%239747ff'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+}
+
+#weeklyViewSelect:focus {
+  outline: none;
+  border-color: #9747ff;
+  box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.15);
+}
+
+#weeklyViewSelect:hover {
+  border-color: #ddd6fe;
+  background-color: #f8f4ff;
+}
+
+/* Grade Level Dropdown Styling */
+#gradeLevelDropdown {
+  appearance: none;
+  background-color: #9747ff;
+  color: white;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  text-align: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+#gradeLevelDropdown:hover {
+  background-color: #a461fb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+#gradeLevelDropdown:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(151, 71, 255, 0.5);
+}
+
+#gradeLevelDropdown option {
+  background-color: white;
+  color: #333;
+  font-weight: normal;
+}
+
+.day-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.day-display span {
+  font-weight: 500;
+  color: #333;
+}
+
+/* Control Row Layout */
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Adjustments to day display for inline layout */
+.day-display {
+  margin-bottom: 0;
+  padding: 0;
+  background-color: transparent;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .control-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .day-display {
+    margin-top: 10px;
+    justify-content: flex-start;
+    margin-right: 0;
+  }
+}
+
+/* Responsive adjustments for the dropdown */
+@media (max-width: 768px) {
+  .day-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  #gradeLevelDropdown {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .setup-form {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .button-container {
+    flex-direction: column;
+  }
+  
+  .button-container button {
+    width: 100%;
+  }
+  
+  .setup-container {
+    padding: 20px;
+  }
+  
+  .form-group input,
+  .form-group select,
+  input[type="time"] {
+    padding: 10px 14px;
+  }
+
+  .title-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .title-input {
+    width: 100%;
+    margin-right: 0;
+  }
+  
+  .school-year-selector {
+    width: 100%;
+  }
+
+  .checkbox-group {
+    gap: 8px;
+  }
+  
+  .checkbox-group label {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .day-selector, 
+  .section-selector {
+    padding: 14px;
+  }
+  
+  .tab-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Modal Dialog Styles */
+.modal-dialog {
+    position: fixed;
+    z-index: 2000; /* Was 8, still high priority */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6); /* Black with opacity */
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-dialog.show {
+    display: flex !important;
+}
+
+.dialog-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Dialog content styling for edit forms */
+.dialog-content {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  margin: 20vh auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  display: none; 
+}
+
+.dialog-content.show {
+  display: block;
+}
+
+.dialog-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #1e293b;
+  font-size: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dialog-content .form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+.dialog-content .form-input:focus {
+  outline: none;
+  border-color: #9747ff;
+  box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+  background-color: #ffffff;
+}
+
+/* Dialog buttons styling */
+.dialog-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.dialog-buttons button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-btn {
+  background: #9747ff;
+  color: white;
+  border: none;
+}
+
+.save-btn:hover {
+  background: #8033ff;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+.cancel-btn {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.cancel-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* Add custom alert styling that was missing */
+.custom-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 890; /* Was 7, making consistent with other overlays */
+}
+
+.custom-alert.show {
+  display: flex;
+}
+
+.alert-content {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.alert-icon {
+  color: #9747ff;
+}
+
+.close-alert {
+  font-size: 24px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.alert-button {
+  background: #9747ff;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.2s ease;
+}
+
+.alert-button:hover {
+  background: #8033ff;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+thead {
+  background-color: #f8fafc;
+}
+
+th {
+  text-align: center;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #1e293b;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 14px;
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 14px;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Override table cell styles from enhanced-timetable.css */
+.timetable-daily td, 
+.timetable-weekly td {
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  vertical-align: middle;
+  height: auto;
+  min-height: auto;
+  color: #334155;
+  font-size: 14px;
+}
+
+/* Style for time cells */
+.timetable-daily td.time-cell,
+.timetable-weekly td.time-cell {
+  background-color: #f8fafc;
+  font-weight: 500;
+  color: #1e293b;
+  text-align: center;
+  font-size: 13px;
+  width: 100px;
+  position: sticky;
+  left: 0;
+  z-index: 200; /* Was 6, making consistent with fixed column */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Additional table styles */
+.timetable-table {
+  table-layout: fixed;
+  min-width: 800px;
+}
+
+.timetable-table th, 
+.timetable-table td {
+  text-align: center;
+  vertical-align: middle;
+  position: relative;
+}
+
+.timetable-table th:first-child,
+.timetable-table td:first-child {
+  background-color: #f8fafc;
+  font-weight: 500;
+  width: 100px;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.class-cell {
+  background-color: #EEE6FF;
+  border-radius: 0;
+  padding: 8px;
+  margin: 4px;
+  color: #5B2B99;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.class-cell:hover {
+  background-color: #DFD6FF;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.class-cell .subject {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.class-cell .teacher {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.empty-cell {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #e2e8f0;
+  border-radius: 0;
+  margin: 4px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.schedule-item {
+  padding: 8px;
+  border-radius: 0;
+  background-color: #f1f5f9;
+  border-left: 4px solid #9747ff;
+  transition: all 0.2s ease-in-out;
+}
+
+.schedule-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.schedule-subject {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.schedule-teacher {
+  font-size: 12px;
+  color: #5B2B99;
+}
+
+.schedule-room {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.custom-schedule {
+  padding: 8px;
+  border-radius: 0;
+  background-color: #f9f1ff;
+  border-left: 4px solid #9747ff;
+}
+
+.custom-schedule .schedule-note {
+  font-size: 11px;
+  color: #9747ff;
+  font-style: italic;
+}
+
+/* Enhanced table styles */
+.timetable-daily, .timetable-weekly {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.timetable-daily th, .timetable-weekly th {
+  background: #9747ff;
+  color: white;
+  padding: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+.timetable-daily td, .timetable-weekly td {
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+
+.time-cell {
+  background: #f8f9fa;
+  font-weight: 500;
+  text-align: center;
+  font-size: 13px;
+  color: #1e293b;
+  padding: 12px 8px !important;
+}
+
+.schedule-cell {
+  padding: 8px;
+  position: relative;
+  min-height: 80px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.schedule-cell:hover {
+  background-color: #f0f4ff;
+  box-shadow: inset 0 0 0 2px #9747ff;
+  z-index: 250; /* Above regular cells but below active */
+}
+
+/* Export styles */
+.export-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #9747ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.export-button:hover {
+  background: #8033ff;
+}
+
+.export-button img {
+  width: 18px;
+  height: 18px;
+}
+
+/* Export options dropdown */
+.export-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  min-width: 180px;
+  z-index: 1000; /* Was 4, adjusting to match dropdown level */
+  display: none;
+}
+
+.export-dropdown.show {
+  display: block;
+}
+
+.export-option {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.export-option:hover {
+  background: #f8f9fa;
+}
+
+/* Conflict detection and display */
+.conflict-alert {
+    background-color: #fff6f6;
+    padding: 15px;
+    border-left: 4px solid #e53e3e;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.conflict-alert h3 {
+    color: #e53e3e;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.conflict-alert ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.conflict-alert li {
+    margin-bottom: 5px;
+}
+
+.conflict-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    background-color: #e53e3e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 210; /* Should be above cells but below active cells */
+}
+
+/* Additional styles for the conflict alert dialog */
+.custom-alert .alert-content {
+    max-width: 400px;
+}
+
+.custom-alert .conflict-alert {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Weekly view specific styles */
+#weekly-header th:first-child {
+    width: 100px;
+}
+
+/* Daily view specific styles */
+#timetable-header th:first-child {
+    width: 100px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .schedule-cell {
+        min-height: 60px;
+        height: 60px;
+        width: 120px;
+    }
+    
+    .schedule-subject {
+        font-size: 12px;
+    }
+    
+    .schedule-teacher, .schedule-room {
+        font-size: 10px;
+    }
+}
+
+/* Day Selector Dropdown Styling */
+#daySelect {
+  appearance: none;
+  background-color: #9747ff;
+  color: white;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  text-align: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+#daySelect:hover {
+  background-color: #a461fb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+#daySelect:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(151, 71, 255, 0.5);
+}
+
+#daySelect option {
+  background-color: white;
+  color: #333;
+  font-weight: normal;
+}
+
+.day-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-selector label {
+  font-weight: 500;
+  color: #333;
+}
+
+/* Center align all table headers */
+th {
+  text-align: center;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #1e293b;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 14px;
+}
+
+/* Make sure timetable headers are also centered */
+.timetable-daily th, 
+.timetable-weekly th {
+  background: #9747ff;
+  color: white;
+  padding: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+/* Ensure first column headers (time cells) maintain center alignment */
+.timetable-table th:first-child,
+#timetable-header th:first-child,
+#weekly-header th:first-child {
+  text-align: center;
+}
+
+/* Make schedule cells clickable and show pointer cursor */
+.schedule-cell {
+  padding: 8px;
+  position: relative;
+  min-height: 80px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.schedule-cell:hover {
+  background-color: #f0f4ff;
+  box-shadow: inset 0 0 0 2px #9747ff;
+  z-index: 250; /* Above regular cells but below active */
+}
+
+/* Schedule cell modal styling */
+.schedule-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* Updated to match z-index hierarchy */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.schedule-modal.show {
+  display: flex;
+  opacity: 1;
+  animation: fadeIn 0.3s ease;
+}
+
+.schedule-modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.schedule-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.schedule-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+  color: #334155;
+}
+
+.schedule-form-group {
+  margin-bottom: 16px;
+}
+
+.schedule-form-group label {
+  display: block;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.schedule-form-group input,
+.schedule-form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+.schedule-form-group input:focus,
+.schedule-form-group select:focus {
+  outline: none;
+  border-color: #9747ff;
+  box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+  background-color: #ffffff;
+}
+
+.schedule-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.schedule-modal-actions button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-schedule-btn {
+  background: #9747ff;
+  color: white;
+  border: none;
+}
+
+.save-schedule-btn:hover {
+  background: #8033ff;
+}
+
+.delete-schedule-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+}
+
+.delete-schedule-btn:hover {
+  background: #dc2626;
+}
+
+.cancel-schedule-btn {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.cancel-schedule-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Time slot information styling */
+.time-slot-info {
+  background-color: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border-left: 4px solid #9747ff;
+}
+
+.time-slot-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #334155;
+}
+
+.time-slot-info strong {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Legacy Dialog Styles - Keeping for backward compatibility with other dialogs */
+.dialog {
+    display: none;
+    position: fixed;
+    z-index: 2000; /* Updated to match z-index hierarchy */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow: auto;
+}
+
+.dialog.show {
+    display: block !important;
+}
+
+/* Using the same animation as schedule-modal */
+.dialog-content {
+    position: relative;
+    background-color: #fff;
+    margin: 10vh auto;
+    padding: 0;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px; /* Updated to match schedule-modal */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Updated to match schedule-modal */
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes dialog-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dialog-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.dialog-body {
+    padding: 20px;
+}
+
+.dialog-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #f1f5f9; /* Updated to match schedule-modal */
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0;
+}
+
+.close-btn:hover {
+    color: #334155;
+}
+
+/* Form elements in dialog */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #334155; /* Updated to match schedule-modal */
+    font-size: 14px; /* Updated to match schedule-modal */
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 16px; /* Updated to match schedule-modal */
+    border: 1px solid #e2e8f0;
+    border-radius: 8px; /* Updated to match schedule-modal */
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background-color: #f8fafc; /* Updated to match schedule-modal */
+}
+
+.toggle-container {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-label input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.toggle-text {
+    margin-left: 30px;
+    font-weight: 500;
+}
+
+.toggle-label input + .toggle-text:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 46px;
+    height: 24px;
+    border-radius: 12px;
+    background-color: #ccc;
+    transition: background-color 0.3s;
+}
+
+.toggle-label input + .toggle-text:after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: white;
+    transition: transform 0.3s;
+}
+
+.toggle-label input:checked + .toggle-text:before {
+    background-color: #9747ff;
+}
+
+.toggle-label input:checked + .toggle-text:after {
+    transform: translateX(22px);
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+    gap: 12px;
+}
+
+.dialog-buttons button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.dialog-buttons .save-button {
+    background-color: #9747ff;
+    color: white;
+}
+
+.dialog-buttons .save-button:hover {
+    background-color: #8033ff;
+}
+
+.dialog-buttons .delete-button {
+    background-color: #ff3b30;
+    color: white;
+}
+
+.dialog-buttons .delete-button:hover {
+    background-color: #e02d23;
+}
+
+.dialog-buttons .cancel-button {
+    background-color: #f2f2f7;
+    color: #333;
+}
+
+.dialog-buttons .cancel-button:hover {
+    background-color: #e5e5ea;
+}
+
+/* Z-index hierarchy for proper layering */
+
+/* Modal dialogs should be at the highest level */
+.modal-dialog,
+#editCellDialog,
+#timeSlotDialog,
+.schedule-modal,
+.custom-alert {
+  z-index: 2000; /* Highest priority */
+  position: fixed;
+}
+
+/* Dialog overlay/backdrop should be just below dialogs */
+.modal-backdrop,
+.dialog-overlay {
+  z-index: 1900; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Dropdowns and popovers */
+.export-dropdown,
+.timetable-dropdown {
+  z-index: 1000;
+}
+
+/* Navigation elements */
+.navTop {
+  z-index: 900;
+}
+
+.sidebar {
+  z-index: 950;
+}
+
+.sidebar-overlay {
+  z-index: 940;
+}
+
+/* Fixed table elements */
+.timetable-table th:first-child,
+.timetable-table td:first-child,
+.timetable-daily td.time-cell,
+.timetable-weekly td.time-cell {
+  z-index: 200;
+}
+
+/* Ensure modal dialog appears properly */
+#editCellDialog.show {
+  display: block !important;
+  opacity: 1;
+}
+
+/* Modal dialog styling */
+#editCellDialog,
+#timeSlotDialog,
+.modal-dialog {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+}

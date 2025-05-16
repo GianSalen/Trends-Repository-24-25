@@ -1,0 +1,168 @@
+/* Additional styles for create-timetable to ensure consistency with base table management */
+
+/* Cell prioritization for better UX */
+.timetable-daily td[onclick],
+.timetable-weekly td[onclick] {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.timetable-daily td[onclick]:hover,
+.timetable-weekly td[onclick]:hover {
+    background-color: rgba(151, 71, 255, 0.05);
+    z-index: 50;
+}
+
+.timetable-daily td.filled[onclick],
+.timetable-weekly td.filled[onclick] {
+    cursor: pointer;
+}
+
+.timetable-daily td.filled[onclick]:hover,
+.timetable-weekly td.filled[onclick]:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 55;
+}
+
+/* Add ripple effect to cells for better interaction feedback */
+.timetable-daily td[onclick],
+.timetable-weekly td[onclick] {
+    position: relative;
+    overflow: hidden;
+}
+
+.timetable-daily td[onclick]:after,
+.timetable-weekly td[onclick]:after {
+    content: "";
+    background: rgba(151, 71, 255, 0.3);
+    display: block;
+    position: absolute;
+    border-radius: 50%;
+    padding-top: 240%;
+    padding-left: 240%;
+    margin-top: -120%;
+    margin-left: -120%;
+    opacity: 0;
+    transition: all 0.8s;
+}
+
+.timetable-daily td[onclick]:active:after,
+.timetable-weekly td[onclick]:active:after {
+    padding-top: 0;
+    padding-left: 0;
+    margin-top: 0;
+    margin-left: 0;
+    opacity: 1;
+    transition: 0s;
+}
+
+/* Button styles for dialog */
+.btn-primary {
+    background: #9747ff;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #8033ff;
+}
+
+.btn-secondary {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* Enhanced UX for cell interaction */
+.cell-clicked {
+    animation: cell-pulse 0.3s ease;
+}
+
+@keyframes cell-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); background-color: rgba(151, 71, 255, 0.1); }
+    100% { transform: scale(1); }
+}
+
+.cell-focused {
+    outline: 2px solid #9747ff;
+    position: relative;
+    z-index: 50;
+}
+
+/* Dialog overlay animation */
+.dialog-overlay {
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+/* Form input focus styles to match schedule-modal */
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #9747ff;
+    box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+    background-color: #ffffff;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+
+/* Toggle container for custom input */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.toggle-container input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.toggle-label {
+    font-weight: 500;
+    color: #334155;
+}

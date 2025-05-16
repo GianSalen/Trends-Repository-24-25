@@ -1,0 +1,1723 @@
+/**
+ *
+ * This file handles the creation, editing, and management of school timetables in the EduPlanner application.
+ * It provides functionality for:
+ * - Creating and configuring new timetables
+ * - Managing time slots and schedules
+ * - Supporting both daily and weekly timetable views
+ * - Handling section-specific time slots
+ * - Saving and loading timetables
+ * - Integration with backend API endpoints
+ * 
+ * The timetable module supports:
+ * - Multiple school days configuration
+ * - Customizable time slots
+ * - Subject and teacher assignments
+ * - Room allocation
+ * - Custom activities/subjects
+ * 
+ * BACKEND IMPLEMENTATION REQUIREMENTS:
+ * 
+ * 1. Database Models Required:
+ *    - TimeSlot: Stores time slots with start_time, end_time, and day fields
+ *    - Schedule: Links sections, subjects, teachers, and time slots together
+ *    - Section, Subject, Teacher: Referenced from existing models
+ * 
+ * 2. API Endpoints Needed:
+ *    - GET /api/school-year/current/: Returns current school year
+ *    - GET /api/teachers/: Returns all teachers
+ *    - GET /api/sections/: Returns all sections
+ *    - GET /api/subjects/: Returns all subjects
+ *    - GET/POST /api/timeslots/: CRUD operations for time slots
+ *    - GET/POST /api/schedule/: CRUD operations for schedule entries
+ *    - POST /api/timetable/save/: Bulk save schedules for a timetable
+ *    - GET /api/schedule/section/<id>/: Get schedules for specific section
+ *    - GET /api/schedule/teacher/<id>/: Get schedules for specific teacher
+ *    - POST /api/schedule/check-conflicts/: Check for scheduling conflicts
+ * 
+ * 3. Conflict Detection Logic:
+ *    - Same section, same time slot: Section already has class at this time
+ *    - Same teacher, same time slot: Teacher already teaching elsewhere
+ *
+ * 4. Data Format:
+ *    - Schedule JSON: {timeSlotId, sectionId, subjectId, teacherId, schoolYear}
+ *    - TimeSlot JSON: {id, start_time, end_time, day}
+ */
+
+//API Helper Functions - For handling interactions with the backend
+/**
+ * Fetch data from API with optional query parameters
+ * @param {string} endpoint - The API endpoint URL
+ * @param {Object} params - Optional query parameters
+ * @returns {Promise<Object>} The JSON response from the API
+ */
+async function fetchFromAPI(endpoint, params = {}) {
+    try {
+        // Add school year param if not explicitly provided and we have a currentSchoolYear
+        if (!params.year && window.currentSchoolYear) {
+            params.year = window.currentSchoolYear;
+        }
+        // Build query string
+        const queryString = Object.keys(params).length
+            ? '?' + new URLSearchParams(params).toString()
+            : '';
+        // Make the API call
+        const response = await fetch(`${endpoint}${queryString}`);
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`Error fetching from ${endpoint}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * Post data to API
+ * @param {string} endpoint - The API endpoint URL
+ * @param {Object} data - The data to post to the API
+ * @returns {Promise<Object>} The JSON response from the API
+ */
+async function postToAPI(endpoint, data = {}) {
+    try {
+        // Add school year if not explicitly provided and we have a currentSchoolYear
+        if (!data.schoolYear && window.currentSchoolYear) {
+            data.schoolYear = window.currentSchoolYear;
+        }
+
+        // Make the API call
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`Error posting to ${endpoint}:`, error);
+        throw error;
+    }
+}
+
+//Store current state of the timetable
+let currentEditingCell = null;
+let hasUnsavedChanges = false;
+
+//Main data structure for timetable
+let timetableData = {
+    title: '',
+    sections: 0,
+    startTime: '',
+    endTime: '',
+    endTime: '',
+    timeInterval: 0,
+    cells: [],
+    gradeLevel: null,
+    days: [],
+    timeSlots: [],
+    sectionTimeSlots: {}//section-specific time slots
+};
+
+//not yet connectted to backend
+let currentSchoolYear = localStorage.getItem('currentSchoolYear') || '2023-2024';
+let availableSections = [];
+let timetables = JSON.parse(localStorage.getItem(`timetables_${currentSchoolYear}`)) || [];
+
+// Global variables
+let currentEditingTimeSlot = null;
+let currentEditingSectionId = '';
+let timeSlotIdCounter = 0;
+
+// Function to format time for display in 12-hour format
+function formatTime(timeInput) {
+    // If time is a Date object, extract hours and minutes
+    if (timeInput instanceof Date) {
+        const hours = timeInput.getHours();
+        const minutes = timeInput.getMinutes().toString().padStart(2, '0');
+
+        // Convert to 12-hour format
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hour = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+
+        // Return formatted time
+        return `${hour}:${minutes} ${ampm}`;
+    }
+    
+    // If time is a string in format "HH:MM" or "HH:MM:SS"
+    else if (typeof timeInput === 'string') {
+        const timeParts = timeInput.split(':');
+        if (timeParts.length >= 2) {
+            const hours = parseInt(timeParts[0]);
+            const minutes = timeParts[1].padStart(2, '0');
+            
+            // Convert to 12-hour format
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hour = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+            
+            return `${hour}:${minutes} ${ampm}`;
+        }
+    }
+    
+    // Fallback for unexpected input
+    return timeInput?.toString() || '';
+}
+
+// DOMContentLoaded event listener to initialize the page
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize time inputs
+    initializeTimeInputs();
+
+    // Set up tab switching
+    document.getElementById('dailyTabBtn').addEventListener('click', () => switchTimetableTab('daily'));
+    document.getElementById('weeklyTabBtn').addEventListener('click', () => switchTimetableTab('weekly'));
+
+    // Set up weekly view section selector change handler
+    document.getElementById('weeklyViewSelect').addEventListener('change', generateWeeklyView);    // Set up day dropdown change handler
+    document.getElementById('daySelect').addEventListener('change', changeDayView);
+
+    // Update end year based on start year
+    updateEndYear();
+
+    // Initialize the page with the current school year
+    // This will trigger loading data and updating the sections list
+    fetchCurrentSchoolYear();
+    const gradeDropdown = document.getElementById('gradeLevelDropdown');
+    if (gradeDropdown) {
+        gradeDropdown.addEventListener('change', updateGradeLevel);
+    }
+
+    // Initialize dialog elements
+    subjectSelect = document.getElementById('subjectSelect');
+    teacherSelect = document.getElementById('teacherSelect');
+    roomInput = document.getElementById('roomInput');
+});
+
+// Get current school year from the backend
+async function fetchCurrentSchoolYear() {
+    try {
+        const response = await fetchFromAPI('/api/school-year/current/');
+        if (response && response.year_range) {
+            currentSchoolYear = response.year_range;
+
+            // Update the year input fields
+            const [startYear, endYear] = currentSchoolYear.split('-');
+            document.getElementById('startYear').value = startYear;
+            updateEndYear();
+
+            // After setting the current school year, load sections and other data
+            await loadDataFromBackend();
+        }
+    } catch (error) {
+        console.error('Error fetching current school year:', error);
+    }
+}
+
+// Load all required data from backend
+async function loadDataFromBackend() {
+    try {
+        console.log('Loading data from backend...');
+        // Use Django API endpoints to fetch data
+        const teachersPromise = fetchFromAPI('/api/teachers/');
+        const sectionsPromise = fetchFromAPI('/api/sections/');
+        const subjectsPromise = fetchFromAPI('/api/subjects/');
+        const timeslotsPromise = fetchFromAPI('/api/timeslots/');
+
+        // Wait for all promises to resolve
+        const [teachers, sections, subjects, timeslots] = await Promise.all([
+            teachersPromise, sectionsPromise, subjectsPromise, timeslotsPromise
+        ]);
+
+        console.log('Sections received from API:', sections);
+
+        // Update our global data
+        window.allTeachers = teachers;
+        window.allSections = sections;
+        window.allSubjects = subjects;
+        window.allTimeslots = timeslots;
+
+        console.log('window.allSections set to:', window.allSections);
+
+        // Now load data that depends on school year
+        await loadScheduleData();
+
+        // Update sections list immediately after loading data
+        updateSectionsList();
+    } catch (error) {
+        console.error('Error loading data from backend:', error);
+    }
+}
+
+// Load schedule data that depends on school year
+async function loadScheduleData() {
+    try {
+        // Make sure we have a valid school year
+        if (!window.currentSchoolYear) {
+            // Get from input fields or use default
+            const startYear = document.getElementById('startYear').value;
+            window.currentSchoolYear = `${startYear}-${parseInt(startYear) + 1}`;
+            localStorage.setItem('currentSchoolYear', window.currentSchoolYear);
+        }
+
+        // Check if there are any existing schedules for the current school year
+        try {
+            const existingSchedules = await fetchFromAPI('/api/schedule/', {
+                year: window.currentSchoolYear
+            });
+
+            console.log(`Loaded ${existingSchedules.length || 0} schedules for school year ${window.currentSchoolYear}`);
+
+            // Convert backend schedule data to timetable cell format
+            if (Array.isArray(existingSchedules) && existingSchedules.length > 0) {
+                timetableData.cells = existingSchedules.map(schedule => {
+                    return {
+                        sectionId: schedule.sectionId,
+                        timeSlot: schedule.timeSlotId,
+                        day: schedule.day,
+                        content: {
+                            isCustom: false,
+                            subjectId: schedule.subjectId,
+                            subject: schedule.subjectName,
+                            teacherId: schedule.teacherId,
+                            teacher: schedule.teacherName,
+                            room: schedule.room || 'TBA',
+                            scheduleId: schedule.id // Store the schedule ID for future updates
+                        }
+                    };
+                });
+            }
+        } catch (error) {
+            console.warn('No existing schedules found for this school year:', error);
+        }
+
+        // Update UI to show current school year
+        document.querySelector('.school-year-selector .year-input-group').title =
+            `School year: ${window.currentSchoolYear}`;
+    } catch (error) {
+        console.error('Error loading schedule data:', error);
+    }
+}
+
+// Update sections list to use backend data
+function updateSectionsList() {
+    const gradeLevel = document.getElementById('gradeLevel').value;
+    const sectionsContainer = document.getElementById('sectionsContainer');
+
+    console.log('updateSectionsList called. gradeLevel:', gradeLevel);
+    console.log('window.allSections:', window.allSections);
+
+    if (!window.allSections) {
+        console.log('window.allSections is not available yet');
+        sectionsContainer.innerHTML = '<div class="loading">Loading sections...</div>';
+        return;
+    }
+
+    // Filter sections by grade level
+    availableSections = (window.allSections || []).filter(section =>
+        parseInt(section.gradeLevel) === parseInt(gradeLevel)
+    ).sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log('Filtered availableSections:', availableSections);
+
+    // Get advisor information for each section
+    const loadAdvisers = async () => {
+        try {
+            console.log('Loading advisers...');
+            const advisers = await fetchFromAPI('/api/advisers/');
+            console.log('Advisers loaded:', advisers);
+
+            // Process adviser data
+            if (Array.isArray(advisers)) {
+                const adviserMap = {};
+                advisers.forEach(adv => {
+                    // The backend returns 'sectionId' and 'adviserName' not 'teacherName'
+                    adviserMap[adv.sectionId] = adv.adviserName;
+                });
+
+                console.log('Adviser map created:', adviserMap);
+
+                // Display sections list with adviser information
+                updateSectionsDisplay(adviserMap);
+            } else {
+                console.log('Advisers data is not an array');
+                updateSectionsDisplay({});
+            }
+        } catch (error) {
+            console.error('Error loading advisers:', error);
+            // Still update the display even if adviser data fails to load
+            updateSectionsDisplay({});
+        }
+    };
+
+    // Update the sections display with adviser information if available
+    const updateSectionsDisplay = (adviserMap) => {
+        if (availableSections.length > 0) {
+            sectionsContainer.innerHTML = availableSections.map(section => {
+                // Get the adviser name for this section using the section's id
+                const adviserName = adviserMap[section.id] || 'Not assigned';
+                return `
+                <div class="section-item">
+                    <div class="section-info">
+                        <span>${section.name}</span>
+                        <small>Adviser: ${adviserName}</small>
+                    </div>
+                    <div class="section-status">
+                        <span class="status-badge new">Available</span>
+                    </div>
+                </div>
+            `}).join('');
+        } else {
+            sectionsContainer.innerHTML = `
+                <div class="empty-state">
+                    No sections found for Grade ${gradeLevel}. 
+                    Please add sections in Base Table Management.
+                </div>
+            `;
+        }
+    };
+
+    // Load adviser data asynchronously
+    loadAdvisers();
+}
+
+// Update end year based on start year
+function updateEndYear() {
+    const startYear = parseInt(document.getElementById('startYear').value);
+    document.getElementById('endYear').value = startYear + 1;
+
+    // Update the current school year and store it
+    window.currentSchoolYear = `${startYear}-${startYear + 1}`;
+    localStorage.setItem('currentSchoolYear', window.currentSchoolYear);
+
+    // When school year changes, reload data that depends on school year
+    loadScheduleData();
+}
+
+
+// Open edit dialog for cell contents
+function openEditDialog(cell) {
+    console.log('openEditDialog called with cell:', cell);
+    currentEditingCell = cell;
+    
+    // Check if modal exists
+    const dialog = document.getElementById('editCellDialog');
+    console.log('Dialog element found:', dialog);
+
+    if (!dialog) {
+        console.error('editCellDialog element not found in the DOM!');
+        alert('Error: The edit dialog is missing from the page. Please check HTML template.');
+        return;
+    }
+    
+    // Create overlay if it doesn't exist
+    let dialogOverlay = document.querySelector('.dialog-overlay');
+    if (!dialogOverlay) {
+        dialogOverlay = document.createElement('div');
+        dialogOverlay.className = 'dialog-overlay';
+        document.body.appendChild(dialogOverlay);
+    }
+    
+    // Show overlay
+    dialogOverlay.style.display = 'block';
+    setTimeout(() => {
+        dialogOverlay.style.opacity = '1';
+    }, 10);
+    
+    // Global variables needed for this function
+    const subjectSelect = document.getElementById('subjectSelect');
+    const teacherSelect = document.getElementById('teacherSelect');
+    const roomInput = document.getElementById('roomInput');
+    const editCellTimeInfo = document.getElementById('editCellTimeInfo');
+    
+    if (!subjectSelect || !teacherSelect || !roomInput) {
+        console.error('Form inputs not found:', {
+            subjectSelect: !!subjectSelect, 
+            teacherSelect: !!teacherSelect, 
+            roomInput: !!roomInput
+        });
+        alert('Error: Form elements not found. Check dialog HTML.');
+        return;
+    }
+    
+    // Get time slot information to display in the modal
+    const timeSlot = cell.dataset.timeSlot ? JSON.parse(cell.dataset.timeSlot) : null;
+    const section = cell.dataset.section;
+    const day = timeSlot ? timeSlot.day : '';
+      // Format and display the time slot info
+    if (editCellTimeInfo) {
+        // Find section name
+        const sectionObj = availableSections.find(s => s.id === section);
+        const sectionName = sectionObj ? sectionObj.name : 'Unknown Section';
+        
+        if (timeSlot) {
+            editCellTimeInfo.innerHTML = `
+                <strong>Day:</strong> ${day}<br>
+                <strong>Time:</strong> ${formatTime(timeSlot.start_time)} - ${formatTime(timeSlot.end_time)}<br>
+                <strong>Section:</strong> ${sectionName}
+            `;
+        } else {
+            // Fallback if timeSlot object isn't available
+            const timeDisplay = cell.dataset.time ? cell.dataset.time : 'Unknown';
+            const dayDisplay = cell.dataset.day || 'Unknown';
+            
+            editCellTimeInfo.innerHTML = `
+                <strong>Day:</strong> ${dayDisplay}<br>
+                <strong>Time:</strong> ${timeDisplay}<br>
+                <strong>Section:</strong> ${sectionName}
+            `;
+        }
+    }
+
+    // Show the modal with proper styling
+    dialog.style.display = 'flex';
+    dialog.classList.add('show');
+
+    // Get the current grade level
+    const gradeLevel = document.getElementById('gradeLevel').value;
+
+    // Filter subjects by grade level
+    const gradeSubjects = window.allSubjects ? window.allSubjects.filter(subject => 
+        subject.gradeLevel === parseInt(gradeLevel) || subject.gradeLevel === null || subject.gradeLevel === undefined
+    ) : [];
+
+    console.log('Populating dropdowns with:', {
+        subjects: gradeSubjects.length,
+        teachers: window.allTeachers ? window.allTeachers.length : 0
+    });
+
+    // Populate dropdowns with data from base tables
+    subjectSelect.innerHTML = '<option value="">Select Subject</option>' +
+        gradeSubjects.map(subject =>
+            `<option value="${subject.id}">${subject.name}</option>`
+        ).join('');
+
+    teacherSelect.innerHTML = '<option value="">Select Teacher</option>' +
+        (window.allTeachers || []).map(teacher =>
+            `<option value="${teacher.id}">${teacher.name}</option>`
+        ).join('');
+
+    // If the cell already has content, pre-select the values
+    if (cell.dataset.content) {
+        const content = JSON.parse(cell.dataset.content);
+        console.log('Cell has content:', content);
+
+        if (content.isCustom) {
+            // Enable custom mode
+            document.getElementById('customToggle').checked = true;
+            toggleCustomInput();
+            document.getElementById('customSubject').value = content.customSubject || '';
+        } else {
+            // Standard mode
+            document.getElementById('customToggle').checked = false;
+            toggleCustomInput();
+            if (content.subjectId) subjectSelect.value = content.subjectId;
+            if (content.teacherId) teacherSelect.value = content.teacherId;
+            if (content.room) roomInput.value = content.room;
+        }
+    } else {
+        // Clear the form for new entries
+        document.getElementById('customToggle').checked = false;
+        toggleCustomInput();
+        subjectSelect.value = '';
+        teacherSelect.value = '';
+        roomInput.value = '';
+    }
+
+    console.log('openEditDialog completed successfully');
+    console.log('Dialog visibility state:', {
+        displayStyle: dialog.style.display,
+        hasShowClass: dialog.classList.contains('show'),
+        computedStyle: window.getComputedStyle(dialog).display
+    });
+}
+
+// Toggle between standard and custom input in the edit dialog
+function toggleCustomInput() {
+    const isCustom = document.getElementById('customToggle').checked;
+    const standardInputs = document.getElementById('standardInputs');
+    const customInputs = document.getElementById('customInputs');
+
+    if (isCustom) {
+        standardInputs.style.display = 'none';
+        customInputs.style.display = 'block';
+    } else {
+        standardInputs.style.display = 'block';
+        customInputs.style.display = 'none';
+    }
+}
+
+// Enhanced saveCellData function to handle days
+function saveCellData() {
+    const isCustom = document.getElementById('customToggle').checked;
+    let cellContent;
+
+    if (isCustom) {
+        // Custom input mode
+        const customSubject = document.getElementById('customSubject').value.trim();
+
+        if (!customSubject) {
+            showCustomAlert('Please enter a custom subject or activity');
+            return;
+        }
+
+        cellContent = {
+            isCustom: true,
+            customSubject: customSubject
+        };
+    } else {
+        // Standard input mode
+        const subjectSelect = document.getElementById('subjectSelect');
+        const teacherSelect = document.getElementById('teacherSelect');
+        const roomInput = document.getElementById('roomInput');
+
+        if (!subjectSelect.value || !teacherSelect.value || !roomInput.value.trim()) {
+            showCustomAlert('Please fill in all fields');
+            return;
+        }        // Get selected subject and teacher names
+        const subjects = window.allSubjects || [];
+        const teachers = window.allTeachers || [];
+
+        const subject = subjects.find(s => s.id === subjectSelect.value);
+        const teacher = teachers.find(t => t.id === teacherSelect.value);
+
+        if (!subject || !teacher) {
+            showCustomAlert('Subject or teacher not found');
+            return;
+        }
+
+        cellContent = {
+            isCustom: false,
+            subjectId: subjectSelect.value,
+            subject: subject.name,
+            teacherId: teacherSelect.value,
+            teacher: teacher.name,
+            room: roomInput.value.trim()
+        };
+    }
+
+    // Update cell in DOM
+    currentEditingCell.dataset.content = JSON.stringify(cellContent);
+    currentEditingCell.innerHTML = formatCellContent(cellContent);
+    currentEditingCell.classList.add('filled');
+
+    // Update timetable data
+    const sectionId = currentEditingCell.dataset.section;
+    const timeSlot = currentEditingCell.dataset.time;
+    const day = currentEditingCell.dataset.day;
+
+    // Find if cell already exists in data
+    const existingCellIndex = timetableData.cells.findIndex(cell =>
+        cell.sectionId === sectionId &&
+        cell.timeSlot === timeSlot &&
+        cell.day === day
+    );
+
+    if (existingCellIndex >= 0) {
+        // Update existing cell
+        timetableData.cells[existingCellIndex].content = cellContent;
+    } else {
+        // Add new cell
+        timetableData.cells.push({
+            sectionId,
+            timeSlot,
+            day,
+            content: cellContent
+        });
+    }    // Enable save button
+    document.querySelector('.save-button').disabled = false;
+    hasUnsavedChanges = true;
+
+    // Show success notification
+    showCustomAlert('Schedule saved successfully!');
+    
+    closeEditDialog();
+}
+
+//Deletes cell data
+async function deleteCellData() {
+    if (!confirm('Are you sure you want to delete this schedule?')) {
+        return;
+    }
+
+    try {
+        // Check if we have a scheduleId from the backend
+        const content = JSON.parse(currentEditingCell.dataset.content || '{}');
+
+        if (content.scheduleId) {
+            // Delete from backend
+            const result = await deleteSchedule(content.scheduleId);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to delete schedule from server');
+            }
+        }
+
+        // Remove cell content from UI
+        currentEditingCell.dataset.content = '';
+        currentEditingCell.innerHTML = '';
+        currentEditingCell.classList.remove('filled');
+
+        // Update timetable data
+        const sectionId = currentEditingCell.dataset.section;
+        const timeSlot = currentEditingCell.dataset.time;
+        const day = currentEditingCell.dataset.day;
+
+        // Find if cell exists in data
+        const existingCellIndex = timetableData.cells.findIndex(cell =>
+            cell.sectionId === sectionId &&
+            cell.timeSlot === timeSlot &&
+            cell.day === day
+        );
+
+        if (existingCellIndex >= 0) {
+            // Remove from cells array
+            timetableData.cells.splice(existingCellIndex, 1);
+        }
+
+        // Enable save button for timetable changes
+        document.querySelector('.save-button').disabled = false;
+        hasUnsavedChanges = true;
+
+        closeEditDialog();
+        showCustomAlert('Schedule deleted successfully');
+    } catch (error) {
+        console.error('Error deleting schedule:', error);
+        showCustomAlert(`Error deleting schedule: ${error.message}`);
+    }
+}
+
+//Closes the cell edit dialog
+function closeEditDialog() {
+    const dialog = document.getElementById('editCellDialog');
+    const dialogOverlay = document.querySelector('.dialog-overlay');
+    
+    if (dialog) {
+        dialog.classList.remove('show');
+        
+        // Hide overlay with fade out effect
+        if (dialogOverlay) {
+            dialogOverlay.style.opacity = '0';
+        }
+        
+        // Use setTimeout to allow animation to complete before hiding the modal
+        setTimeout(() => {
+            dialog.style.display = 'none';
+            
+            // Remove overlay from DOM after animation
+            if (dialogOverlay) {
+                dialogOverlay.style.display = 'none';
+            }
+        }, 300); // Matches the fadeIn animation duration
+    }
+    
+    currentEditingCell = null;
+}
+
+//Validates time interval input (30-120 minutes)
+function validateTimeInterval(input) {
+    if (input.value < 30 || input.value > 120) {
+        showCustomAlert('Please enter a value between 30 and 120 minutes');
+        input.value = 60; // Reset to default
+    }
+}
+//Handles back button click with save prompt
+function handleBackButton(event) {
+    event.preventDefault();
+    showSavePrompt();
+}
+// Shows save confirmation dialog
+function showSavePrompt(callback) {
+    if (confirm('Do you want to save your changes before leaving?')) {
+        handleSaveAndExit();
+    } else {
+        handleDontSave();
+    }
+    if (callback) callback();
+}
+// Saves and returns to dashboard
+function handleSaveAndExit() {
+    saveTimetableChanges();
+    window.location.href = dashboardUrl; // Use the Django URL
+}
+
+// Returns to dashboard without saving
+function handleDontSave() {
+    window.location.href = dashboardUrl; // Use the Django URL
+}
+///////////////////TIMETABLE////////////////////////
+// Simplified dummy function to avoid breaking references
+function saveTimetable(timetableData) {
+    console.log('Using saveTimetableToBackend instead of local storage');
+    // This function is kept as a stub - actual saving is done via saveTimetableToBackend
+}
+
+function deleteTimetable(timetableId) {
+    if (confirm('Are you sure you want to delete this timetable?')) {
+        timetables = timetables.filter(t => t.id !== timetableId);
+        localStorage.setItem(`timetables_${currentSchoolYear}`, JSON.stringify(timetables));
+        updateTimetableList();
+    }
+}
+
+//send data to backend
+async function saveTimetableToBackend() {
+    try {
+        // Check for conflicts before saving
+        const conflicts = checkForConflicts();
+        if (conflicts.length > 0) {
+            // Show conflicts but allow user to continue
+            const continueWithConflicts = confirm(
+                `${conflicts.length} scheduling conflicts detected. Do you want to view them before saving?`
+            );
+
+            if (continueWithConflicts) {
+                showConflicts(conflicts);
+                return { success: false, error: 'Please resolve conflicts before saving' };
+            }
+        }
+
+        // Prepare data to send to backend
+        const schedules = [];
+
+        // Get all filled cells
+        const cells = document.querySelectorAll('.schedule-cell.filled');
+        cells.forEach(cell => {
+            if (cell.dataset.content) {
+                const content = JSON.parse(cell.dataset.content);
+
+                // Create schedule entry
+                schedules.push({
+                    timeSlotId: cell.dataset.time,
+                    sectionId: cell.dataset.section,
+                    subjectId: content.subjectId,
+                    teacherId: content.teacherId,
+                    room: content.room || 'TBA'
+                });
+            }
+        });
+
+        // Get the school year from the input fields
+        const startYear = document.getElementById('startYear').value;
+        const endYear = document.getElementById('endYear').value;
+        const schoolYear = `${startYear}-${endYear}`;
+
+        // Ensure global currentSchoolYear is updated
+        window.currentSchoolYear = schoolYear;
+
+        // Use our API helper to post data
+        const result = await postToAPI('/api/timetable/save/', {
+            schedules: schedules,
+            schoolYear: schoolYear,
+            sectionId: getCurrentSectionId() // You would need to implement this function
+        });
+
+        if (result.success) {
+            showCustomAlert(`Timetable saved successfully! ${result.savedCount} entries saved.`);
+        } else {
+            showCustomAlert('Error saving timetable: ' + (result.error || 'Unknown error'));
+        }
+
+        return result;
+    } catch (error) {
+        console.error('Error saving timetable to backend:', error);
+        showCustomAlert('Failed to save timetable: ' + error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+//Handles changes to timetable title
+function handleTitleChange() {
+    const titleInput = document.getElementById('timetableTitle');
+    const value = titleInput.value.trim();
+
+    if (value === '') {
+        titleInput.value = 'New Timetable';
+        return;
+    }
+
+    hasUnsavedChanges = true;
+    timetableData.title = value;
+}
+
+//Toggles saved timetables dropdown
+function toggleTimetableList() {
+    const timetableList = document.getElementById('timetableList');
+    timetableList.classList.toggle('show');
+    updateTimetableList();
+}
+
+function updateTimetableList() {
+    const timetableList = document.getElementById('timetableList');
+    const emptyTimetables = document.getElementById('emptyTimetables');
+
+    if (timetables.length === 0) {
+        emptyTimetables.style.display = 'flex';
+        return;
+    }
+
+    emptyTimetables.style.display = 'none';
+
+    // First group by school year, then by grade level
+    const groupedByYear = timetables.reduce((yearAcc, timetable) => {
+        const year = timetable.schoolYear;
+        if (!yearAcc[year]) yearAcc[year] = [];
+        yearAcc[year].push(timetable);
+        return yearAcc;
+    }, {});
+
+    // Sort school years in descending order
+    const sortedYears = Object.keys(groupedByYear).sort().reverse();
+
+    timetableList.innerHTML = sortedYears.map(schoolYear => {
+        // Group timetables by grade level within each school year
+        const gradeTimetables = groupedByYear[schoolYear].reduce((gradeAcc, timetable) => {
+            const key = `Grade ${timetable.gradeLevel}`;
+            if (!gradeAcc[key]) gradeAcc[key] = [];
+            gradeAcc[key].push(timetable);
+            return gradeAcc;
+        }, {});
+
+        // Sort grades numerically
+        const sortedGrades = Object.keys(gradeTimetables).sort((a, b) => {
+            return parseInt(a.replace('Grade ', '')) - parseInt(b.replace('Grade ', ''));
+        });
+
+        return `
+            <div class="school-year-group">
+                <h2 class="year-header">School Year ${schoolYear}</h2>
+                ${sortedGrades.map(grade => `
+                    <div class="grade-group">
+                        <h3>${grade}</h3>
+                        ${gradeTimetables[grade].map(timetable => `
+                            <div class="timetable-item">
+                                <div class="timetable-info">
+                                    <span class="timetable-name">${timetable.day}</span>
+                                    <small>${timetable.sections.length} sections</small>
+                                </div>
+                                <div class="timetable-actions">
+                                    <button onclick="loadTimetable('${timetable.id}')" class="load-button">
+                                        <span class="material-icons">edit</span>
+                                    </button>
+                                    <button onclick="deleteTimetable('${timetable.id}')" class="delete-button">
+                                        <span class="material-icons">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }).join('');
+}
+
+
+
+
+//Navbar scroll effect
+let lastScroll = 0;
+const navbar = document.querySelector('.navTop');
+
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+
+    //Add/remove scrolled class based on scroll position
+    if (currentScroll > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+
+    lastScroll = currentScroll;
+});
+
+function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+
+    // Prevent body scrolling when sidebar is open
+    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+}
+
+// Update the input handlers
+function updateTimeSettings(event) {
+    if (event.type === 'change' || (event.type === 'keyup' && event.key === 'Enter')) {
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+        const timeInterval = parseInt(document.getElementById('timeInterval').value);
+
+        // Validate inputs
+        if (!startTime || !endTime || !timeInterval) return;
+        if (timeInterval < 30 || timeInterval > 120) {
+            showCustomAlert('Time interval must be between 30 and 120 minutes');
+            return;
+        }
+
+        // Update timetable data
+        timetableData.startTime = startTime;
+        timetableData.endTime = endTime;
+        timetableData.timeInterval = timeInterval;
+
+        // Enable save button
+        document.querySelector('.save-button').disabled = false;
+        hasUnsavedChanges = true;
+
+        // Regenerate timetable if it exists
+        if (document.getElementById('timetableContainer').style.display === 'block') {
+            generateTimetable();
+        }
+    }
+}
+
+// Update the HTML input elements to add event listeners
+function initializeTimeInputs() {
+    const timeInputs = ['startTime', 'endTime', 'timeInterval'];
+    timeInputs.forEach(id => {
+        const input = document.getElementById(id);
+        input.addEventListener('change', updateTimeSettings);
+        input.addEventListener('keyup', updateTimeSettings);
+    });
+}
+
+// Update the save changes functionality
+function saveTimetableChanges() {
+    if (!hasUnsavedChanges) return;
+
+    const timetableContent = [];
+    const cells = document.querySelectorAll('.schedule-cell');
+    cells.forEach(cell => {
+        if (cell.dataset.content) {
+            timetableContent.push({
+                sectionId: cell.dataset.section,
+                timeSlot: cell.dataset.time,
+                content: JSON.parse(cell.dataset.content)
+            });
+        }
+    });
+
+    const updatedTimetable = {
+        ...timetableData,
+        cells: timetableContent,
+        lastModified: new Date().toISOString()
+    };
+
+    saveTimetable(updatedTimetable);
+
+    // Reset state
+    hasUnsavedChanges = false;
+    document.querySelector('.save-button').disabled = true;
+    showCustomAlert('Changes saved successfully!');
+}
+// Tab switching functionality
+function switchTimetableTab(tabName) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Reset all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected tab content and activate button
+    document.getElementById(`${tabName}View`).classList.add('active');
+    document.getElementById(`${tabName}TabBtn`).classList.add('active');
+
+    // Add animation class for smooth transition
+    document.getElementById(`${tabName}View`).classList.add('tab-fade-in');
+
+    // Remove animation class after animation completes
+    setTimeout(() => {
+        document.getElementById(`${tabName}View`).classList.remove('tab-fade-in');
+    }, 500);
+
+    // Generate the view for the selected tab
+    switch (tabName) {
+        case 'daily':
+            // Daily view is the default, already generated
+            break;
+        case 'weekly':
+            generateWeeklyView();
+            break;
+    }
+}
+
+// Weekly view generation with custom subject support
+function generateWeeklyView() {
+    const weeklySelect = document.getElementById('weeklyViewSelect');
+    const header = document.getElementById('weekly-header');
+    const body = document.getElementById('weekly-body');
+
+    // Populate section dropdown if empty
+    if (weeklySelect.childElementCount <= 1) {
+        availableSections.forEach(section => {
+            const option = document.createElement('option');
+            option.value = section.id;
+            option.textContent = section.name;
+            weeklySelect.appendChild(option);
+        });
+    }
+
+    const selectedSectionId = weeklySelect.value;
+    if (!selectedSectionId) {
+        body.innerHTML = `<tr><td colspan="6" class="empty-state">Please select a section to view the weekly schedule.</td></tr>`;
+        return;
+    }
+
+    // Initialize section time slots if needed
+    initializeSectionTimeSlots();
+
+    // Get the selected section's time slots or fall back to global
+    const timeSlots = timetableData.sectionTimeSlots[selectedSectionId] || timetableData.timeSlots;
+
+    if (!timeSlots || timeSlots.length === 0) {
+        body.innerHTML = `<tr><td colspan="6" class="empty-state">No time slots defined. Please add time slots first.</td></tr>`;
+        return;
+    }
+
+    // Sort time slots by start time
+    const sortedTimeSlots = [...timeSlots].sort((a, b) => {
+        const aDate = new Date(`2000/01/01 ${a.start}`);
+        const bDate = new Date(`2000/01/01 ${b.start}`);
+        return aDate - bDate;
+    });
+
+    // Generate the weekly timetable header
+    const hasCustomTimeSlots = timetableData.sectionTimeSlots[selectedSectionId] && timetableData.sectionTimeSlots[selectedSectionId].length > 0;
+
+    // Add a reset button if using custom time slots
+    const resetButton = hasCustomTimeSlots ?
+        `<button class="reset-timeslots-btn" onclick="resetSectionTimeSlots('${selectedSectionId}')" title="Reset to global time slots">
+            <span class="material-icons">restart_alt</span>
+        </button>` : '';
+
+    // Add this to UI where appropriate
+    const viewControls = document.querySelector('#weeklyView .view-controls');
+    const resetButtonContainer = document.createElement('div');
+    resetButtonContainer.className = 'reset-button-container';
+    resetButtonContainer.innerHTML = resetButton;
+
+    // Only append if we have custom time slots
+    if (hasCustomTimeSlots) {
+        viewControls.appendChild(resetButtonContainer);
+    }
+
+    header.innerHTML = `
+        <tr>
+            <th>
+                Time 
+                <button class="add-time-btn" onclick="addNewTimeRow('${selectedSectionId}')">+</button>
+                ${hasCustomTimeSlots ?
+            `<span class="custom-time-badge" title="This section has custom time slots">Custom</span>` :
+            `<span class="global-time-badge" title="This section uses global time slots">Global</span>`
+        }
+            </th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+        </tr>
+    `;
+
+    // Generate the weekly timetable body
+    body.innerHTML = sortedTimeSlots.map(timeSlot => {
+        return `
+            <tr>
+                <td class="time-cell" onclick="editTimeSlot('${timeSlot.id}', '${selectedSectionId}')">
+                    <div class="time-slot-display">
+                        <span>${timeSlot.start} - ${timeSlot.end}</span>
+                        <div class="time-actions">
+                            <button type="button" class="time-edit-btn" title="Edit this time slot">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button type="button" class="time-delete-btn" 
+                                    onclick="event.stopPropagation(); deleteTimeRow('${timeSlot.id}', '${selectedSectionId}')" 
+                                    title="Delete this time slot">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </td>
+                ${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
+            const cell = getCellForSectionTimeDay(selectedSectionId, timeSlot.id, day);
+            const cellClass = cell ? 'schedule-cell filled' : 'schedule-cell';
+
+            return `
+                        <td class="${cellClass}" 
+                            onclick="openEditDialog(this)" 
+                            data-section="${selectedSectionId}" 
+                            data-time="${timeSlot.id}"
+                            data-day="${day}"
+                            ${cell ? `data-content='${JSON.stringify(cell.content)}'` : ''}>
+                            ${cell ? formatCellContent(cell.content) : ''}
+                        </td>
+                    `;
+        }).join('')}
+            </tr>
+        `;
+    }).join('');
+}
+
+// Get a cell content for a specific section, time slot and day
+function getCellForSectionTimeDay(sectionId, timeSlotId, day) {
+    // Find the cell in timetableData.cells
+    const cell = timetableData.cells.find(cell =>
+        cell.sectionId === sectionId &&
+        cell.timeSlot === timeSlotId &&
+        cell.day === day
+    );
+
+    return cell;
+}
+
+// Format cell content for display in the timetable
+function formatCellContent(content) {
+    if (!content) return '';
+
+    // Check for special cells
+    if (content.isCustom) {
+        const customSubject = content.customSubject.toUpperCase();
+
+        // Special formatting for common activities
+        if (customSubject === 'FLAG CEREMONY' ||
+            customSubject === 'LUNCH' ||
+            customSubject === 'RECESS' ||
+            customSubject === 'BREAK') {
+
+            return `<div class="special-schedule ${customSubject.replace(/\s+/g, '-').toLowerCase()}">
+                <div class="special-subject">${customSubject}</div>
+            </div>`;
+        }
+
+        return `<div class="custom-schedule">
+            <div class="schedule-subject">${content.customSubject}</div>
+            <div class="schedule-note">Custom Activity</div>
+        </div>`;
+    } else {
+        // Format for regular class schedule
+        return `<div class="schedule-item">
+            <div class="schedule-subject">${content.subject}</div>
+            <div class="schedule-teacher">${content.teacher}</div>
+            <div class="schedule-room">Room: ${content.room}</div>
+        </div>`;
+    }
+}
+
+// Generate timetable based on settings
+function generateTimetable() {
+    // Get input values
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    const timeInterval = parseInt(document.getElementById('timeInterval').value);
+
+    // Validate inputs
+    if (!startTime || !endTime || !timeInterval) {
+        showCustomAlert('Please complete all fields before creating a timetable');
+        return;
+    }
+
+    if (availableSections.length === 0) {
+        showCustomAlert('No sections available for the selected grade level. Please add sections first in Base Table Management.');
+        return;
+    }    // Get selected day from dropdown
+    const selectedDay = document.getElementById('daySelect').value;
+    const selectedDays = [selectedDay];
+    
+    if (!selectedDay) {
+        showCustomAlert('Please select a day of the week');
+        return;
+    }
+
+    // Update timetable data
+    timetableData.startTime = startTime;
+    timetableData.endTime = endTime;
+    timetableData.timeInterval = timeInterval;
+    timetableData.sections = availableSections.length;
+    timetableData.gradeLevel = document.getElementById('gradeLevel').value;
+    timetableData.days = selectedDays;
+
+    // Generate time slots if none exist
+    if (timetableData.timeSlots.length === 0) {
+        generateTimeSlots(startTime, endTime, timeInterval);
+    }
+
+    // Show timetable container
+    document.getElementById('setupForm').style.display = 'none';
+    document.getElementById('timetableContainer').style.display = 'block';
+
+    // Generate the daily view timetable
+    generateDailyView(selectedDays);
+
+    // Initialize the weekly view dropdown
+    initializeWeeklyViewDropdown();
+}
+
+// Generate time slots based on start time, end time, and interval
+function generateTimeSlots(startTime, endTime, intervalMinutes) {
+    const slots = [];
+
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    const interval = intervalMinutes * 60 * 1000; // Convert to milliseconds
+
+    let slotStart = new Date(start);
+    let timeSlotId = 0;
+
+    while (slotStart < end) {
+        const slotEnd = new Date(slotStart.getTime() + interval);
+
+        // Don't go past the end time
+        if (slotEnd > end) {
+            slotEnd.setTime(end.getTime());
+        }
+
+        // Create the time slot
+        const timeSlot = {
+            id: `ts${timeSlotId++}`,
+            start: slotStart.toTimeString().substring(0, 5),
+            end: slotEnd.toTimeString().substring(0, 5)
+        };
+
+        slots.push(timeSlot);
+
+        // Move to next slot
+        slotStart = new Date(slotEnd);
+    }
+
+    // Update the global time slots
+    timetableData.timeSlots = slots;
+
+    return slots;
+}
+
+// Generate the daily view table
+function generateDailyView(selectedDays) {
+    const header = document.getElementById('timetable-header');
+    const body = document.getElementById('timetable-body');
+
+    // We'll only use the first selected day for daily view
+    const selectedDay = selectedDays[0];
+
+    // Get the grade level
+    const gradeLevel = document.getElementById('gradeLevel').value;    // Show which day and grade level is being displayed
+    const dayDisplayEl = document.querySelector('#dailyView .day-display');
+    if (dayDisplayEl) {
+        dayDisplayEl.innerHTML = `
+    <span>Grade Level: </span>
+    <select id="gradeLevelDropdown" onchange="updateGradeLevel()">
+        <option value="7" ${gradeLevel === '7' ? 'selected' : ''}>Grade 7</option>
+        <option value="8" ${gradeLevel === '8' ? 'selected' : ''}>Grade 8</option>
+        <option value="9" ${gradeLevel === '9' ? 'selected' : ''}>Grade 9</option>
+        <option value="10" ${gradeLevel === '10' ? 'selected' : ''}>Grade 10</option>
+        <option value="11" ${gradeLevel === '11' ? 'selected' : ''}>Grade 11</option>
+        <option value="12" ${gradeLevel === '12' ? 'selected' : ''}>Grade 12</option>
+    </select>
+`;
+    }
+
+    // Generate header with sections as columns
+    let headerHtml = `
+        <tr>
+            <th>Time</th>
+    `;
+
+    // Add section columns to header
+    availableSections.forEach(section => {
+        headerHtml += `<th class="section-column-header">${section.name}</th>`;
+    });
+    headerHtml += `</tr>`;
+
+    header.innerHTML = headerHtml;
+
+    // Generate time rows
+    const timeSlots = timetableData.timeSlots;
+
+    // First sort time slots by start time
+    const sortedTimeSlots = [...timeSlots].sort((a, b) => {
+        const aDate = new Date(`2000/01/01 ${a.start}`);
+        const bDate = new Date(`2000/01/01 ${b.start}`);
+        return aDate - bDate;
+    });
+
+    // Create rows for each time slot with columns for each section
+    let allRowsHtml = '';
+
+    // For each time slot, create a row
+    sortedTimeSlots.forEach(timeSlot => {
+        allRowsHtml += `
+            <tr class="time-slot-row">
+                <td class="time-cell">${formatTime(timeSlot.start)} - ${formatTime(timeSlot.end)}</td>
+        `;
+
+        // Add a cell for each section
+        availableSections.forEach(section => {
+            const cell = getCellForSectionTimeDay(section.id, timeSlot.id, selectedDay);
+            const cellClass = cell ? 'schedule-cell filled' : 'schedule-cell';
+
+            allRowsHtml += `
+                <td class="${cellClass}" 
+                    onclick="openEditDialog(this)" 
+                    data-section="${section.id}" 
+                    data-time="${timeSlot.id}"
+                    data-day="${selectedDay}"
+                    ${cell ? `data-content='${JSON.stringify(cell.content)}'` : ''}>
+                    ${cell ? formatCellContent(cell.content) : ''}
+                </td>
+            `;
+        });
+
+        allRowsHtml += `</tr>`;
+    });
+
+    body.innerHTML = allRowsHtml;
+}
+
+// Initialize the weekly view dropdown with section options
+function initializeWeeklyViewDropdown() {
+    const weeklySelect = document.getElementById('weeklyViewSelect');
+
+    // Clear existing options except the first
+    while (weeklySelect.options.length > 1) {
+        weeklySelect.remove(1);
+    }
+
+    // Add section options
+    availableSections.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section.id;
+        option.textContent = section.name;
+        weeklySelect.appendChild(option);
+    });
+}
+
+// Initialize section-specific time slots if needed
+function initializeSectionTimeSlots() {
+    if (!timetableData.sectionTimeSlots) {
+        timetableData.sectionTimeSlots = {};
+    }
+
+    // Make sure all available sections have an entry (even if empty)
+    availableSections.forEach(section => {
+        if (!timetableData.sectionTimeSlots[section.id]) {
+            timetableData.sectionTimeSlots[section.id] = [];
+        }
+    });
+}
+
+// Get the current section ID for the active view
+function getCurrentSectionId() {
+    // For weekly view, use the selected section from the dropdown
+    if (document.getElementById('weeklyView').classList.contains('active')) {
+        const weeklySelect = document.getElementById('weeklyViewSelect');
+        return weeklySelect.value;
+    }
+
+    // For daily view, get the first section (we save all sections in daily view)
+    if (availableSections && availableSections.length > 0) {
+        return availableSections[0].id;
+    }
+
+    return null; // No section selected or available
+}
+
+// Load a timetable by ID
+function loadTimetable(timetableId) {
+    const timetable = timetables.find(t => t.id === timetableId);
+    if (!timetable) {
+        showCustomAlert('Timetable not found');
+        return;
+    }
+
+    // Set form values
+    document.getElementById('gradeLevel').value = timetable.gradeLevel;
+    document.getElementById('startTime').value = timetable.startTime;
+    document.getElementById('endTime').value = timetable.endTime;
+    document.getElementById('timeInterval').value = timetable.timeInterval;
+
+    // Update sections list
+    updateSectionsList();    // Check the day for this timetable in the dropdown
+    const daySelect = document.getElementById('daySelect');
+    if (daySelect) {
+        daySelect.value = timetable.day;
+    }
+
+    // Update timetable data
+    timetableData = {
+        ...timetableData,
+        title: timetable.title || 'New Timetable',
+        sections: timetable.sections.length,
+        startTime: timetable.startTime,
+        endTime: timetable.endTime,
+        timeInterval: timetable.timeInterval,
+        gradeLevel: timetable.gradeLevel,
+        days: [timetable.day],
+        cells: timetable.cells || []
+    };
+
+    // Show timetable container
+    document.getElementById('setupForm').style.display = 'none';
+    document.getElementById('timetableContainer').style.display = 'block';
+
+    // Generate the daily view
+    generateDailyView([timetable.day]);
+
+    // Update title input
+    document.getElementById('timetableTitle').value = timetable.title || 'New Timetable';
+
+    // Close dropdown
+    document.getElementById('timetableList').classList.remove('show');
+}
+
+// Delete a schedule from the backend
+async function deleteSchedule(scheduleId) {
+    try {
+        const response = await fetch(`/api/schedule/delete/${scheduleId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`Error deleting schedule:`, error);
+        throw error;
+    }
+}
+
+// Display a custom alert message to the user
+function showCustomAlert(message) {
+    const alertBox = document.createElement('div');
+    alertBox.className = 'custom-alert';
+    alertBox.innerHTML = `
+        <div class="alert-content">
+            <p>${message}</p>
+            <button onclick="this.parentElement.parentElement.remove()">OK</button>
+        </div>
+    `;
+    document.body.appendChild(alertBox);
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertBox.parentElement) {
+            alertBox.remove();
+        }
+    }, 5000);
+}
+
+// Toggle export options dropdown
+function toggleExportOptions() {
+    const exportDropdown = document.getElementById('exportOptions');
+    exportDropdown.classList.toggle('show');
+
+    // Close the dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!e.target.closest('.export-container')) {
+            exportDropdown.classList.remove('show');
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
+
+// Export timetable in different formats
+function exportTimetable(format) {
+    // Get the current active tab
+    const isWeeklyView = document.getElementById('weeklyView').classList.contains('active');
+    const tableId = isWeeklyView ? 'weekly-timetable' : 'timetable';
+
+    // Get the title for the export file
+    const timetableTitle = document.getElementById('timetableTitle').value.trim() || 'Timetable';
+    const gradeLevel = document.getElementById('gradeLevel').value;
+    const schoolYear = window.currentSchoolYear || document.getElementById('startYear').value + '-' + document.getElementById('endYear').value;
+
+    // Create a filename
+    const fileName = `${timetableTitle}_Grade${gradeLevel}_${schoolYear}`;
+
+    // Show message that this functionality is simplified
+    showCustomAlert(`Export as ${format.toUpperCase()} is not available in this version.`);
+
+    // Close the dropdown
+    document.getElementById('exportOptions').classList.remove('show');
+}
+
+// Function to detect scheduling conflicts
+function checkForConflicts() {
+    const conflicts = [];
+
+    // Group cells by timeSlot and day to check for conflicts
+    const timeSlotMap = {};
+
+    timetableData.cells.forEach(cell => {
+        if (!cell.content || cell.content.isCustom) return; // Skip custom cells
+
+        const key = `${cell.timeSlot}_${cell.day}`;
+        if (!timeSlotMap[key]) timeSlotMap[key] = [];
+        timeSlotMap[key].push(cell);
+    });
+
+    // Check for teacher conflicts (same teacher, same timeslot, different sections)
+    Object.values(timeSlotMap).forEach(cells => {
+        if (cells.length <= 1) return; // No conflict possible with only one cell
+
+        // Check each pair of cells
+        for (let i = 0; i < cells.length; i++) {
+            for (let j = i + 1; j < cells.length; j++) {
+                const cell1 = cells[i];
+                const cell2 = cells[j];
+
+                // Skip if either doesn't have content
+                if (!cell1.content || !cell2.content) continue;
+
+                // Teacher conflict
+                if (cell1.content.teacherId === cell2.content.teacherId) {
+                    conflicts.push({
+                        type: 'teacher',
+                        teacherId: cell1.content.teacherId,
+                        teacherName: cell1.content.teacher,
+                        day: cell1.day,
+                        timeSlot: cell1.timeSlot,
+                        sections: [cell1.sectionId, cell2.sectionId]
+                    });
+                }
+            }
+        }
+    });
+
+    return conflicts;
+}
+
+// Display conflicts in the UI
+function showConflicts(conflicts) {
+    if (conflicts.length === 0) {
+        showCustomAlert('No scheduling conflicts found!');
+        return;
+    }
+
+    // Create conflict alert content
+    const conflictsList = conflicts.map(conflict => {
+        if (conflict.type === 'teacher') {
+            return `<li>Teacher "${conflict.teacherName}" is scheduled in multiple sections on ${conflict.day}</li>`;
+        }
+        return '';
+    }).join('');
+
+    // Show the conflicts
+    const alertContent = `
+        <div class="conflict-alert">
+            <h3>Scheduling Conflicts Detected</h3>
+            <ul>${conflictsList}</ul>
+            <p>Please review and resolve these conflicts before saving.</p>
+        </div>
+    `;
+
+    showCustomAlert(alertContent);
+}
+
+// Updates the grade level in the timetable data and refreshes the UI accordingly.
+function updateGradeLevel() {
+    const gradeDropdown = document.getElementById('gradeLevelDropdown');
+    if (!gradeDropdown) return;
+    
+    const selectedGrade = gradeDropdown.value;
+    console.log('Grade level changed to:', selectedGrade);
+    
+    // Update the grade level in the timetable data
+    timetableData.gradeLevel = selectedGrade;
+    
+    // Update the hidden gradeLevel input that's used by other functions
+    const gradeLevelInput = document.getElementById('gradeLevel');
+    if (gradeLevelInput) {
+        gradeLevelInput.value = selectedGrade;
+    }
+    
+    // Update sections list based on the selected grade
+    updateSectionsList();
+    
+    // If timetable is already visible, regenerate it with the new grade level
+    if (document.getElementById('timetableContainer').style.display === 'block') {
+        // Keep the current day selection
+        const selectedDay = timetableData.days[0];
+        if (selectedDay) {
+            generateDailyView([selectedDay]);
+        }
+    }
+    
+    // Mark that we have unsaved changes
+    hasUnsavedChanges = true;
+    document.querySelector('.save-button').disabled = false;
+}
+
+// Change the day view when a new day is selected from the dropdown
+function changeDayView() {
+    const selectedDay = document.getElementById('daySelect').value;
+    
+    // Update timetable data days array with the selected day
+    timetableData.days = [selectedDay];
+    
+    // Generate the daily view for the selected day
+    generateDailyView([selectedDay]);
+    
+    // Mark changes as unsaved
+    hasUnsavedChanges = true;
+    document.querySelector('.save-button').disabled = false;
+}
+
+// Function to edit a time slot
+function editTimeSlot(timeSlotId, sectionId) {
+    console.log('editTimeSlot called with timeSlotId:', timeSlotId, 'sectionId:', sectionId);
+    showCustomAlert('Editing time slots is not implemented in this version');
+}
+
+// Function to save the time slot changes
+function saveTimeSlot() {
+    console.log('saveTimeSlot called but not implemented');
+    closeTimeSlotDialog();
+    showCustomAlert('Time slot settings saved');
+}
+
+function closeTimeSlotDialog() {
+    const dialog = document.getElementById('timeSlotDialog');
+    if (dialog) dialog.style.display = 'none';
+}
+
+// Create a new time slot
+function addNewTimeRow(sectionId) {
+    console.log('addNewTimeRow called with sectionId:', sectionId);
+    showCustomAlert('Adding new time slots is not implemented in this version');
+}
+
+// Reset section-specific time slots to global ones
+function resetSectionTimeSlots(sectionId) {
+    console.log('resetSectionTimeSlots called with sectionId:', sectionId);
+    showCustomAlert('Time slots reset to global defaults');
+    generateWeeklyView();
+}
+
+// Function to close custom alert manually
+function closeCustomAlert() {
+    const alertBox = document.querySelector('.custom-alert');
+    if (alertBox) alertBox.remove();
+}
+
+// Function to delete a time slot
+function deleteTimeRow(timeSlotId, sectionId) {
+    console.log('deleteTimeRow called with timeSlotId:', timeSlotId, 'sectionId:', sectionId);
+    showCustomAlert('Deleting time slots is not implemented in this version');
+}
