@@ -1,56 +1,90 @@
-/* Modal Styles for Create Timetable
-   This file consolidates styles from:
-   - modal-enhancements.css
-   - modal-presentation.css
-   - modal-scroll-lock.css
-   And includes styles originally applied via JavaScript in modal-presentation-fix.js
+/* Modal Styles for EduPlanner
+   Consolidated and organized modal styles for better maintainability
+   and responsive design across all devices
 */
 
 /* ======================================
-   1. BASE MODAL STRUCTURE AND POSITIONING
+   1. Z-INDEX HIERARCHY
+   ====================================== */
+:root {
+  --z-index-modal: 9999;
+  --z-index-backdrop: 9000;
+  --z-index-dropdown: 8000;
+  --z-index-navigation: 7000;
+  --z-index-fixed-elements: 6000;
+  
+  --modal-animation-duration: 0.25s;
+  --modal-backdrop-color: rgba(0, 0, 0, 0.6);
+  --modal-border-radius: 8px;
+  --modal-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  --modal-width: 500px;
+  --modal-content-padding: 20px;
+}
+
+/* ======================================
+   2. BASE MODAL STRUCTURE AND POSITIONING
    ====================================== */
 
-/* General Modal Backdrop */
-.schedule-modal,
-.custom-alert,
-.edit-dialog {
-  /* Positioning and structure */
+/* Modal Overlay */
+.dialog-overlay {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: var(--modal-backdrop-color) !important;
+  z-index: var(--z-index-backdrop) !important;
+  opacity: 0 !important;
+  transition: opacity var(--modal-animation-duration) ease-in-out !important;
+  display: none !important;
+}
+
+/* General Modal Backdrop */
+.schedule-modal,
+.custom-alert,
+.edit-dialog,
+#editCellDialog,
+#timeSlotDialog,
+.modal-dialog {
+  /* Positioning and structure */
+  position: fixed !important;
+  inset: 0 !important; /* shorthand for top/right/bottom/left */
   height: 100vh !important;
   width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
   
   /* Display and visibility */
-  display: flex !important;
+  display: none !important;
   align-items: center !important;
   justify-content: center !important;
-  visibility: hidden !important;
   opacity: 0 !important;
   
   /* Animation */
-  transition: visibility 0s linear 0.25s, opacity 0.25s linear !important;
+  transition: opacity var(--modal-animation-duration) ease-in-out !important;
   
   /* Backdrop styling */
-  background-color: rgba(0, 0, 0, 0.6) !important;
+  background-color: var(--modal-backdrop-color) !important;
   backdrop-filter: blur(5px) !important;
   
   /* Stack order */
-  z-index: 9999 !important;
+  z-index: var(--z-index-modal) !important;
   overflow: hidden !important;
+  transform: none !important; /* Reset any transform that might be inherited */
 }
 
 /* Show state for modals */
 .schedule-modal.show,
 .custom-alert.show,
-.edit-dialog.show {
-  visibility: visible !important;
+.edit-dialog.show,
+#editCellDialog.show,
+#timeSlotDialog.show,
+.modal-dialog.show {
+  display: flex !important;
   opacity: 1 !important;
-  transition-delay: 0s !important;
+  transition: opacity var(--modal-animation-duration) ease-in-out !important;
 }
 
 /* Fix for Safari which doesn't support backdrop-filter */
@@ -105,7 +139,10 @@ body.modal-open {
 /* Modal content base styles */
 .schedule-modal-content,
 .alert-content,
-.dialog-content {
+.dialog-content,
+.modal-content,
+#editCellDialog .schedule-modal-content,
+#timeSlotDialog .dialog-content {
   /* Sizing */
   max-height: 80vh !important;
   width: 500px !important;
@@ -122,15 +159,24 @@ body.modal-open {
   /* Animation */
   transform: scale(0.9) !important;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  animation: modal-fade-in 0.3s ease !important; 
   
   /* Overflow control */
   overflow: hidden !important;
 }
 
+/* Modal animation */
+@keyframes modal-fade-in {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 /* Modal content when shown */
 .schedule-modal.show .schedule-modal-content,
 .custom-alert.show .alert-content,
-.edit-dialog.show .dialog-content {
+.edit-dialog.show .dialog-content,
+#editCellDialog.show .schedule-modal-content,
+#timeSlotDialog.show .dialog-content {
   transform: scale(1) !important;
 }
 
@@ -500,7 +546,26 @@ body.modal-open {
    7. RESPONSIVE DESIGN
    ====================================== */
 
-/* Mobile adjustments */
+/* ======================================
+   9. RESPONSIVE DESIGN
+   ====================================== */
+   
+/* Tablets */
+@media (max-width: 1024px) {
+  .schedule-modal-content,
+  .alert-content,
+  .dialog-content {
+    width: 90% !important;
+    max-width: 90vw !important;
+    max-height: 85vh !important;
+  }
+  
+  .modal-inner-content {
+    max-height: 60vh !important;
+  }
+}
+
+/* Mobile devices */
 @media (max-width: 768px) {
   .schedule-modal-content,
   .alert-content,
@@ -508,10 +573,16 @@ body.modal-open {
     width: 95% !important;
     max-width: 95vw !important;
     max-height: 80vh !important;
+    padding: 15px !important;
   }
   
   .modal-inner-content {
     max-height: 50vh !important;
+  }
+  
+  .schedule-form-group,
+  .form-group {
+    margin-bottom: 12px !important;
   }
   
   .schedule-modal-header,

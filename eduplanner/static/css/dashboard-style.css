@@ -139,7 +139,9 @@ body {
 .modal-content {
   position: relative;
   width: 90%;
-  max-width: 1200px; 
+  max-width: 1200px;
+  padding: 0 200px;
+  margin: 0 auto;
 }
 
 .modal-content video {
@@ -939,12 +941,25 @@ footer {
   position: relative;
   background: white;
   margin: 5% auto;
-  padding: 24px;
+  padding: 24px 200px;
   width: 90%;
   max-width: 1200px; /* Increased from 1000px */
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   animation: scaleIn 0.3s ease;
+}
+
+/* Responsive modal padding */
+@media (max-width: 1024px) {
+  .modal-content {
+    padding: 24px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 24px 20px;
+  }
 }
 
 .year-selector {

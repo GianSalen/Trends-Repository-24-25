@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Timetable - EduPlanner</title>    {% load static %}    <link rel="stylesheet" href="{% static 'css/create-timetable.css' %}">
-    <link rel="stylesheet" href="{% static 'css/create-timetable-update.css' %}">
-    <link rel="stylesheet" href="{% static 'css/modal-styles.css' %}">
+<head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Create Timetable - EduPlanner</title>    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/create-timetable-style.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script>
-        // Pass Django URLs to JavaScript
         const dashboardUrl = "{% url 'dashboard' %}";
     </script>
 </head>
@@ -171,8 +167,8 @@
                 </div>
 
                 <div class="button-container">
-                    <button class="create-button" onclick="generateTimetable()">Create Timetable</button>
-                    <button class="save-button" onclick="saveTimetableChanges()" disabled>Save Changes</button>
+                    <button class="btn btn-primary create-button" onclick="generateTimetable()">Create Timetable</button>
+                    <button class="btn btn-secondary save-button" onclick="saveTimetableChanges()" disabled>Save Changes</button>
                 </div>
             </div>
         </div>
@@ -231,7 +227,7 @@
             </div>
 
             <div class="timetable-actions">
-                <button class="save-button" onclick="saveTimetableToDatabase()">Save to Database</button>
+                <button class="btn btn-primary save-button" onclick="saveTimetableToDatabase()">Save to Database</button>
                 <div class="export-container">
                     <button class="export-button" onclick="toggleExportOptions()">
                         <img src="{% static 'images/exporticon.svg' %}" alt="Export">
@@ -295,27 +291,13 @@
                 </div>
                 
                 <div class="schedule-modal-actions">
-                    <button type="button" class="delete-schedule-btn" onclick="deleteCellData()">Delete</button>
-                    <button type="button" class="cancel-schedule-btn" onclick="closeEditDialog()">Cancel</button>
-                    <button type="button" class="save-schedule-btn" onclick="saveCellData()">Save</button>
+                    <button type="button" class="btn btn-danger delete-schedule-btn" onclick="deleteCellData()">Delete</button>
+                    <button type="button" class="btn btn-secondary cancel-schedule-btn" onclick="closeEditDialog()">Cancel</button>
+                    <button type="button" class="btn btn-primary save-schedule-btn" onclick="saveCellData()">Save</button>
                 </div>
             </div>
-        </div>        <!-- Custom Alert Dialog -->
-        <div id="customAlert" class="custom-alert">
-            <div class="alert-content">
-                <div class="alert-header">
-                    <div class="alert-title">
-                        <span class="material-icons alert-icon">info</span>
-                        <h3>Notification</h3>
-                    </div>
-                    <span class="close-alert" onclick="closeCustomAlert()">&times;</span>
-                </div>
-                <div class="alert-body">
-                    <p id="alertMessage"></p>
-                </div>
-                <button onclick="closeCustomAlert()" class="alert-button">OK</button>
-            </div>
-        </div>        <!-- Time Slot Dialog -->
+        </div>        
+        <!-- Time Slot Dialog -->
         <div id="timeSlotDialog" class="edit-dialog">
             <div class="dialog-content">                <div class="dialog-header">
                     <h3 id="timeSlotDialogTitle">Edit Time Slot</h3>
@@ -343,8 +325,8 @@
                 </div>
 
                 <div class="dialog-buttons">
-                    <button class="cancel-btn" onclick="closeTimeSlotDialog()">Cancel</button>
-                    <button class="save-btn" onclick="saveTimeSlot()">Save Changes</button>
+                    <button class="btn btn-secondary cancel-btn" onclick="closeTimeSlotDialog()">Cancel</button>
+                    <button class="btn btn-primary save-btn" onclick="saveTimeSlot()">Save Changes</button>
                 </div>
             </div>
         </div>    </div>    <script src="{% static 'js/create-timetable.js' %}"></script>
