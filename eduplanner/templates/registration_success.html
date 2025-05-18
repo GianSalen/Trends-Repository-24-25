@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registration Successful - EduPlanner</title>
+  {% load static %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="{% static 'css/sign-in-style.css' %}">
+  <style>
+    .success-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #9747ff, #5b2b99 80.5%);
+      text-align: center;
+      padding: 0 20px;
+    }
+    
+    .success-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      animation: fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .success-icon {
+      font-size: 64px;
+      color: #10b981;
+      margin-bottom: 20px;
+    }
+    
+    .success-title {
+      font-size: 28px;
+      color: #1a3a63;
+      margin-bottom: 15px;
+    }
+    
+    .success-message {
+      color: #6c7a8d;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    .login-button {
+      background-color: #9747ff;
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .login-button:hover {
+      background-color: #8033FF;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-page">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <h1 class="success-title">Registration Successful!</h1>
+      <p class="success-message">
+        Thank you for registering with EduPlanner. Your account has been created successfully.
+        You can now log in to access all features.
+      </p>
+      <a href="{% url 'login' %}" class="login-button">Go to Login</a>
+    </div>
+  </div>
+</body>
+</html>

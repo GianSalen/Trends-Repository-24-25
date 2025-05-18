@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgot Password - EduPlanner</title>
+  {% load static %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="{% static 'css/forgotpass-style.css' %}">
+</head>
+
+<body>
+  <div class="forgot-password-container">
+    <a href="{% url 'login' %}" class="back-button">
+      <span class="back-icon"><img src="{% static 'images/backicon.svg' %}"></span>
+      Back
+    </a>
+    
+    <div class="form-header">
+      <h1>Forgot Password?</h1>
+      <p>Enter your email address to reset your password.</p>
+    </div>
+
+    <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Enter your email address" required>
+      </div>
+
+      <button type="submit" class="reset-button">Reset Password</button>
+    </form>
+
+    <p class="return-login">
+      Remember your password? <a href="{% url 'login' %}">Back to login</a>
+    </p>
+  </div>
+  <script src="{% static 'js/forgotpass-script.js' %}"></script>
+</body>
+
+</html>

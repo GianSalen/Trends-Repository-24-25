@@ -1,0 +1,578 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Settings - EduPlanner</title>
+  <link rel="stylesheet" href="{% static 'css/profile-settings.css' %}">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+
+<body>
+  <nav class="navTop">
+    <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+    <div class="profile-section">
+      <div class="profile-pic">
+        <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+      </div>
+      <div class="profile-info">
+        <div class="ProfileName">{{ user.get_full_name }}</div>
+        <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+      </div>
+    </div>
+
+    <div class="links">
+      <div class="smalllogo">
+        <img src="{% static 'images\EduPlannerLogo.jpg' %}" alt="EduPlanner Logo">
+      </div>
+      <a href="{% url 'dashboard' %}" class="home">Home</a>
+      <a href="{% url 'about_page' %}">About</a>
+      <a href="{% url 'contact_page' %}">Contact</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'logout' %}" class="log-in">Log out</a>
+      {% else %}
+      <a href="{% url 'login' %}" class="log-in">Log in</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="close-btn" onclick="toggleMenu()">&times;</div>
+    </div>
+    <div class="sidebar-profile">
+      <div class="profile-pic">
+        <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+      </div>
+      <div class="profile-info">
+        <div class="ProfileName">{{ user.get_full_name }}</div>
+        <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <a href="{% url 'profile_settings' %}" class="menu-item active">
+        Profile
+      </a>
+      <a href="{% url 'dashboard' %}" class="menu-item">
+        Dashboard
+      </a>
+      <a href="{% url 'school_scheduling_details' %}" class="menu-item">
+        Base Table Management
+      </a>
+      <a href="{% url 'create_timetable' %}" class="menu-item">
+        Create Timetable
+      </a>
+      <a href="{% url 'class_programs' %}" class="menu-item">
+        Class Programs
+      </a>
+      <a href="#" class="menu-item">
+        Settings
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      {% if user.is_authenticated %}
+      <a href="{% url 'logout' %}" class="logout">
+        Log out
+      </a>
+      {% else %}
+      <a href="{% url 'login' %}" class="logout">
+        Log in
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMenu()"></div>
+
+  <!-- Main Content -->
+  <div class="maincontainer">
+    <div class="profile-settings-container">
+      <h1>Profile Settings</h1>
+
+      <div class="settings-content">
+        <div class="profile-photo-section">
+          <div class="profile-photo">
+            <img
+              src="{% if teacher.profile_photo %}{{ teacher.profile_photo.url }}{% else %}{% static 'images/Picture1.jpg' %}{% endif %}"
+              alt="Profile photo" id="profile-image">
+            <div class="photo-overlay">
+              <label for="photo-upload" class="change-photo-btn">
+                <span class="material-icons">photo_camera</span>
+                Change Photo
+              </label>
+              <input type="file" id="photo-upload" name="photo-upload" accept="image/*" style="display: none;">
+            </div>
+          </div>
+          <h2>{{ teacher.first_name }} {{ teacher.last_name }}</h2>
+          <p>{{ teacher.position }}</p>
+        </div>
+
+        <form class="settings-form" id="profile-form" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-section">
+            <h3>Personal Information</h3>
+
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="first-name">Full Name</label>
+                <input type="text" id="first-name" name="first_name" value="{{ user.get_full_name }}" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" required>
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" value="{{ teacher.phone_number|default:'' }}">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="department">Department</label>
+                <input type="text" id="department" name="department" value="{{ teacher.department }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section password-section">
+            <h3>Account Settings</h3>
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ user.username }}" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="current-password">Current Password</label>
+              <div class="password-input-container">
+                <input type="password" id="current-password" name="current_password">
+                <button type="button" class="toggle-password" data-target="current-password">
+                  <span class="material-icons">visibility</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="new-password">New Password</label>
+              <div class="password-input-container">
+                <input type="password" id="new-password" name="new_password">
+                <button type="button" class="toggle-password" data-target="new-password">
+                  <span class="material-icons">visibility</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirm-password">Confirm New Password</label>
+              <div class="password-input-container">
+                <input type="password" id="confirm-password" name="confirm_password">
+                <button type="button" class="toggle-password" data-target="confirm-password">
+                  <span class="material-icons">visibility</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="save-button">Save Changes</button>
+            <button type="button" class="cancel-button" onclick="location.href='{% url 'dashboard' %}'">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Dialog -->
+  <div class="notification" id="notification">
+    <div class="notification-content">
+      <span class="notification-icon success">
+        <span class="material-icons">check_circle</span>
+      </span>
+      <div class="notification-message">Profile updated successfully!</div>
+      <button class="notification-close" onclick="closeNotification()">×</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Toggle sidebar menu
+    function toggleMenu() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
+    }
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+      button.addEventListener('click', function () {
+        const targetId = this.getAttribute('data-target');
+        const passwordInput = document.getElementById(targetId);
+        const icon = this.querySelector('span');
+
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          icon.textContent = 'visibility_off';
+        } else {
+          passwordInput.type = 'password';
+          icon.textContent = 'visibility';
+        }
+      });
+    });
+
+    // Profile image preview
+    document.getElementById('photo-upload').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          document.getElementById('profile-image').src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Form submission
+    document.getElementById('profile-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      // Password validation
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      if (newPassword && newPassword !== confirmPassword) {
+        showNotification('New passwords do not match!', 'error');
+        return;
+      }
+
+      // Get CSRF token
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      // Create form data
+      const formData = new FormData(this);
+
+      // Add the file if selected
+      const fileInput = document.getElementById('photo-upload');
+      if (fileInput.files.length > 0) {
+        formData.append('photo-upload', fileInput.files[0]);
+      }
+
+      // Send data to server
+      fetch('/update-profile/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': csrftoken
+        },
+        credentials: 'same-origin'
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            showNotification('Profile updated successfully!', 'success');
+          } else {
+            showNotification(data.message || 'Error updating profile', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showNotification('Error updating profile. Please try again.', 'error');
+        });
+    });
+
+    // Show notification
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      const messageElement = notification.querySelector('.notification-message');
+      const iconElement = notification.querySelector('.notification-icon');
+
+      messageElement.textContent = message;
+
+      if (type === 'success') {
+        iconElement.className = 'notification-icon success';
+        iconElement.querySelector('span').textContent = 'check_circle';
+      } else {
+        iconElement.className = 'notification-icon error';
+        iconElement.querySelector('span').textContent = 'error';
+      }
+
+      notification.classList.add('show');
+
+      // Automatically hide after 5 seconds
+      setTimeout(closeNotification, 5000);
+    }
+
+    // Close notification
+    function closeNotification() {
+      document.getElementById('notification').classList.remove('show');
+    }
+  </script>
+  <script>
+  // Toggle sidebar menu
+  function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('sidebar-overlay').classList.toggle('active');
+  }
+  
+  // Profile image preview
+  document.getElementById('photo-upload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        document.getElementById('profile-image').src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Handle password change request
+  let passwordChangeEnabled = false;
+  const passwordSection = document.querySelector('.password-section');
+  const passwordGroups = passwordSection.querySelectorAll('.form-group:not(:first-child)');
+  
+  // Hide password fields by default
+  passwordGroups.forEach(group => {
+    group.style.display = 'none';
+  });
+  
+  // Add "Change Password" button
+  const changePasswordBtn = document.createElement('button');
+  changePasswordBtn.type = 'button';
+  changePasswordBtn.className = 'change-password-btn';
+  changePasswordBtn.innerHTML = '<span class="material-icons">lock</span> Change Password';
+  passwordSection.querySelector('h3').after(changePasswordBtn);
+  
+  // Password change button click handler
+  changePasswordBtn.addEventListener('click', function() {
+    showPasswordConfirmation();
+  });
+  
+  // Show password confirmation dialog
+  function showPasswordConfirmation() {
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'password-modal';
+    modal.innerHTML = `
+      <div class="password-modal-content">
+        <div class="modal-header">
+          <h3>Confirm Your Password</h3>
+          <button type="button" class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>For security reasons, please enter your current password to make changes.</p>
+          <div class="form-group">
+            <label for="verify-password">Current Password</label>
+            <div class="password-input-container">
+              <input type="password" id="verify-password" placeholder="Enter your current password">
+              <button type="button" class="toggle-password" data-target="verify-password">
+                <span class="material-icons">visibility</span>
+              </button>
+            </div>
+            <div class="password-error"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="cancel-modal-btn">Cancel</button>
+          <button type="button" class="confirm-password-btn">Confirm</button>
+        </div>
+      </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(modal);
+    
+    // Add event listeners
+    modal.querySelector('.close-modal').addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    modal.querySelector('.cancel-modal-btn').addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    // Toggle password visibility in modal
+    modal.querySelector('.toggle-password').addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      const passwordInput = document.getElementById(targetId);
+      const icon = this.querySelector('span');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        passwordInput.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    });
+    
+    // Verify password
+    modal.querySelector('.confirm-password-btn').addEventListener('click', () => {
+      const password = document.getElementById('verify-password').value;
+      const errorElement = modal.querySelector('.password-error');
+      
+      if (!password) {
+        errorElement.textContent = 'Please enter your password';
+        return;
+      }
+      
+      // Send password verification to server
+      verifyPassword(password)
+        .then(result => {
+          if (result.success) {
+            // Password verified, show change password fields
+            passwordGroups.forEach(group => {
+              group.style.display = 'block';
+            });
+            passwordChangeEnabled = true;
+            changePasswordBtn.style.display = 'none';
+            document.body.removeChild(modal);
+          } else {
+            // Show error
+            errorElement.textContent = 'Incorrect password';
+          }
+        })
+        .catch(error => {
+          errorElement.textContent = 'Error verifying password. Please try again.';
+          console.error('Password verification error:', error);
+        });
+    });
+    
+    // Focus on password field
+    setTimeout(() => {
+      document.getElementById('verify-password').focus();
+    }, 100);
+  }
+  
+  // Password verification function
+  function verifyPassword(password) {
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    return fetch('/verify-password/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({ password }),
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    });
+  }
+  
+  // Form submission
+  document.getElementById('profile-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Password validation if change is enabled
+    if (passwordChangeEnabled) {
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      
+      if (newPassword && newPassword !== confirmPassword) {
+        showNotification('New passwords do not match!', 'error');
+        return;
+      }
+    }
+    
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Create form data
+    const formData = new FormData(this);
+    
+    // Add password change flag
+    formData.append('password_change_enabled', passwordChangeEnabled);
+    
+    // Add the file if selected
+    const fileInput = document.getElementById('photo-upload');
+    if (fileInput.files.length > 0) {
+      formData.append('photo-upload', fileInput.files[0]);
+    }
+    
+    // Send data to server
+    fetch('/update-profile/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        showNotification('Profile updated successfully!', 'success');
+        
+        // Reset password fields if they were changed
+        if (passwordChangeEnabled) {
+          passwordGroups.forEach(group => {
+            const input = group.querySelector('input');
+            if (input) input.value = '';
+            group.style.display = 'none';
+          });
+          passwordChangeEnabled = false;
+          changePasswordBtn.style.display = 'block';
+        }
+      } else {
+        showNotification(data.message || 'Error updating profile', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showNotification('Error updating profile. Please try again.', 'error');
+    });
+  });
+  
+  // Show notification
+  function showNotification(message, type) {
+    const notification = document.getElementById('notification');
+    const messageElement = notification.querySelector('.notification-message');
+    const iconElement = notification.querySelector('.notification-icon');
+    
+    messageElement.textContent = message;
+    
+    if (type === 'success') {
+      iconElement.className = 'notification-icon success';
+      iconElement.querySelector('span').textContent = 'check_circle';
+    } else {
+      iconElement.className = 'notification-icon error';
+      iconElement.querySelector('span').textContent = 'error';
+    }
+    
+    notification.classList.add('show');
+    
+    // Automatically hide after 5 seconds
+    setTimeout(closeNotification, 5000);
+  }
+  
+  // Close notification
+  function closeNotification() {
+    document.getElementById('notification').classList.remove('show');
+  }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduPlanner</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,600&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=SF+Pro+Text:wght@400&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@700&display=swap" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  </head>
+  <body>
+    <div class="maincontainer">
+      <nav class="navTop">
+        <div class="links">
+          <div class="smalllogo">
+            <img src="{% static 'images/EduPlannerLogo.jpg' %}" alt="EduPlanner Logo">
+          </div>
+          <a href="{% url 'index' %}" class="home">Home</a>
+          <a href="#" class="about">About</a>
+          <a href="#" class="contact">Contact</a>
+        </div>
+        <div class="navitems">
+          <a href="{% url 'sign_in' %}" class="sign-in">Sign in</a>
+          <a href="{% url 'login' %}" class="log-in">Log in</a>
+        </div>
+      </nav>
+
+      <header class="centerBody">
+        <div class="eclipse1"></div>
+        <div class="eclipse2"></div>
+        <div class="content">
+          <h1 class="manageClass">Manage your class program efficiently</h1>
+          <p class="catchPhrase">EduPlanner as an intuitive and beginner-friendly class program table creator.</p>
+          <button class="getStarted" onclick="location.href='{% url 'sign_in' %}'">
+            Get Started
+            <span class="icon"></span>
+          </button>
+        </div>
+        <div class="BrowserFrame">
+          <img src="{% static 'images/Browser Frame.svg' %}">
+        </div>
+      </header>
+      
+      <main>
+        <div class="container">
+          <section class="features">
+            <div class="features-header">
+              <h2>Create Program At Your Own Phase</h2>
+              <p class="features-subtitle">Make your class program creation seamlessly easy</p>
+            </div>
+            <div class="featuregrid">
+              <div class="feature">
+                <img src="{% static 'images/customtime.svg' %}" alt="Custom Timetable">
+                <h3>Custom Timetable</h3>
+                <p>Customize elements such as time slots, the teacher.</p>
+              </div>
+              <div class="feature">
+                <img src="{% static 'images/conflictwarning.svg' %}" alt="Conflict Warning">
+                <h3>Conflict Warning</h3>
+                <p>Error handling of the system in case of scheduling conflicts.</p>
+              </div>
+              <div class="feature">
+                <img src="{% static 'images/inputinfo.svg' %}" alt="Teacher Information">
+                <h3>Teacher Information</h3>
+                <p>Input the teacher information and their subject specialization in one go.</p>
+              </div>
+              <div class="feature">
+                <img src="{% static 'images/exporticon.svg' %}" alt="Export Timetable">
+                <h3>Export Timetable</h3>
+                <p>Export created timetable thorugh PDF, Image or Excel file.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+        
+        <footer>
+          <div class="contactinfo">
+            <h3>Contact us:</h3>
+            <a href="mailto:mlbico@gbox.adnu.edu.ph">mlbico@gbox.adnu.edu.ph</a>
+            <a href="mailto:grsalen@gbox.adnu.edu.ph">grsalen@gbox.adnu.edu.ph</a>
+            <a href="mailto:jfvillareal@gbox.adnu.edu.ph">jfvillareal@gbox.adnu.edu.ph</a>
+            <a href="mailto:jvpalomania@gbox.adnu.edu.ph">jvpalomania@gbox.adnu.edu.ph</a>
+          </div>
+          <div class="branding">
+            <h1>Your UI-intuitive Class Program Creator</h1>
+            <hr>
+            <h4>EduPlanner</h4>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

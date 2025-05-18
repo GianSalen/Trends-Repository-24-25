@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EduPlanner Sign-In</title>
+  {% load static %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="{% static 'css/sign-in-style.css' %}">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+  <div class="sign-in-page">
+    <a href="{% url 'index' %}" class="back-button">
+      <span class="back-icon"><img src="{% static 'images/backicon.svg' %}"></span>
+      Back
+    </a>
+
+    <div class="welcome-page">
+      <div class="welcome-content">
+        <h1 class="welcome-to-eduplanner">Welcome to EduPlanner!</h1>
+        <p class="eduplanner-description">Clarity gives you the blocks & components you need to create an intuitive and clean
+          class program.</p>
+      </div>
+    </div>
+
+    <div class="sign-in-form">
+      <div class="form-container">
+        <div class="form-header">
+          <h2 class="sign-in">Sign-in</h2>
+          <p class="description">Register your account</p>
+        </div>
+
+        {% if error_message %}
+        <div class="error-message-container">
+          {{ error_message }}
+        </div>
+        {% endif %}
+
+        {% if success_message %}
+        <div class="success-message-container">
+          {{ success_message }}
+        </div>
+        {% endif %}
+
+
+        <form id="signInForm" method="post" action="{% url 'register' %}">
+          {% csrf_token %}
+          <div class="input-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="full_name" placeholder="Full Name" required>
+          </div>
+
+          <div class="input-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Username" required>
+          </div>
+
+          <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Email address" required>
+          </div>
+
+          <div class="input-group">
+            <label for="password">Password</label>
+            <div class="password-input-container">
+              <input type="password" id="password" name="password" placeholder="Create a password" required>
+              <button type="button" class="toggle-password" data-target="password">
+                <span class="material-icons">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="confirm-password">Confirm Password</label>
+            <div class="password-input-container">
+              <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm your password" required>
+              <button type="button" class="toggle-password" data-target="confirm-password">
+                <span class="material-icons">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="options">
+            <p class="terms-agreement">
+              By signing in, you agree to the <a href="#" id="termsLink">Terms and Conditions</a> and <a href="#" id="privacyLink">Privacy Policy</a>
+            </p>
+          </div>
+
+          <button type="submit" class="sign-in-button">Sign in</button>
+        </form>
+
+        <p class="create-account">
+          Already have an account? <a href="{% url 'login' %}">Log-in to your account</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms and Conditions Modal -->
+  <div id="termsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <div class="modal-body">
+        <h2>Terms and Conditions (Scheduling Feature)</h2>
+        <p>Welcome to EduPlanner. By using our scheduling services, you agree to the following terms and conditions:</p>
+      
+        <h3>1. Acceptance of Terms</h3>
+        <p>By accessing or using EduPlanner's scheduling feature, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use this feature.</p>
+      
+        <h3>2. Authorized Use</h3>
+        <p>Only authorized school administrators and scheduling coordinators may access and modify schedule data. Misuse or unauthorized access may result in suspension or termination.</p>
+      
+        <h3>3. Scheduling Data Accuracy</h3>
+        <p>You are responsible for ensuring that all data input—such as teacher availability, subject assignments, and section details—is accurate and up to date. EduPlanner is not liable for errors due to incorrect input.</p>
+      
+        <h3>4. Workload Limits</h3>
+        <p>EduPlanner enforces a 6-hour daily workload limit per teacher unless overridden manually by an admin. Users must monitor workload balances to prevent overload or scheduling conflicts.</p>
+      
+        <h3>5. Conflict Detection</h3>
+        <p>EduPlanner includes automatic conflict detection for overlapping assignments or room clashes. It is the admin’s responsibility to verify and adjust flagged schedules.</p>
+      
+        <h3>6. Data Privacy</h3>
+        <p>All schedule data is handled securely and in accordance with our Privacy Policy. Only authorized users can view or modify scheduling information.</p>
+      
+        <h3>7. Termination of Access</h3>
+        <p>We reserve the right to restrict or terminate access to the scheduling feature without prior notice for violations of these terms, misuse of the system, or attempts to compromise data integrity.</p>
+      </div>      
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div id="privacyModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <div class="modal-body">
+        <h2>Privacy Policy (Scheduling Feature)</h2>
+        <p>This Privacy Policy explains how EduPlanner collects, uses, and protects information related to its scheduling feature. By using this feature, you agree to the practices outlined below.</p>
+      
+        <h3>1. Information We Collect</h3>
+        <p>EduPlanner collects scheduling-related data such as teacher names, assigned subjects, time slots, section identifiers, and workload hours. We do not collect unnecessary personal information unrelated to scheduling.</p>
+      
+        <h3>2. How We Use Your Information</h3>
+        <p>The data collected is used solely for the purpose of generating, displaying, and managing class schedules. It helps ensure accurate teacher assignments and conflict-free schedules.</p>
+      
+        <h3>3. Data Access and Permissions</h3>
+        <p>Only authorized users such as school administrators and designated schedulers have access to scheduling data. Access is role-based and password-protected.</p>
+      
+        <h3>4. Data Sharing</h3>
+        <p>EduPlanner does not share or sell scheduling data to any third parties. All information is treated as confidential and used exclusively within your institution’s account.</p>
+      
+        <h3>5. Data Security</h3>
+        <p>We implement industry-standard encryption and security practices to protect your scheduling data from unauthorized access, alteration, or loss.</p>
+      
+        <p>If you have questions about this Privacy Policy, please contact us at: <br>
+            <strong>- mlbico@gbox.adu.edu.ph</strong> <br>
+            <strong>- grsalen@gbox.adu.edu.ph</strong> <br>
+            <strong>- jfvillareal@gbox.adu.edu.ph</strong> <br>
+            <strong>- jvpalomania@gbox.adu.edu.ph</strong>
+        </p>
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="{% static 'js/sign-in-js.js' %}"></script>
+  <script>
+  // Password toggle functionality
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtns = document.querySelectorAll('.toggle-password');
+
+    if (toggleBtns.length > 0) {
+      toggleBtns.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault(); // Prevent form submission if clicked
+
+          const targetId = this.getAttribute('data-target');
+          const passwordInput = document.getElementById(targetId);
+          const icon = this.querySelector('.material-icons');
+
+          if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.textContent = 'visibility_off';
+          } else {
+            passwordInput.type = 'password';
+            icon.textContent = 'visibility';
+          }
+        });
+      });
+    }
+  });
+  </script>
+</body>
+
+</html>

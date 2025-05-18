@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - EduPlanner</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/dashboard-style.css' %}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_circle" />
+</head>
+
+<body>
+  <nav class="navTop">
+        <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+        <div class="profile-section">
+            <div class="profile-pic">
+                <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <div class="ProfileName">{{ user.get_full_name }}</div>
+                <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+            </div>
+        </div>
+
+        <div class="links">
+            <div class="smalllogo">
+                <img src="{% static 'images\EduPlannerLogo.jpg' %}" alt="EduPlanner Logo">
+            </div>
+            <a href="{% url 'dashboard' %}" class="home">Home</a>
+            <a href="{% url 'about_page' %}">About</a>
+            <a href="{% url 'contact_page' %}">Contact</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="log-in">Log out</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="log-in">Log in</a>
+            {% endif %}
+        </div>
+    </nav>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="close-btn" onclick="toggleMenu()">&times;</div>
+    </div>
+    <div class="sidebar-profile">
+      <div class="profile-pic">
+        <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+      </div>
+      <div class="profile-info">
+        <div class="ProfileName">{{ user.get_full_name }}</div>
+        <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <a href="{% url 'profile_settings' %}" class="menu-item">
+        Profile
+      </a>
+      <a href="{% url 'dashboard' %}" class="menu-item active">
+        Dashboard
+      </a>
+      <a href="{% url 'school_scheduling_details' %}" class="menu-item">
+        Base Table Management
+      </a>
+      <a href="{% url 'create_timetable' %}" class="menu-item">
+        Create Timetable
+      </a>
+      <a href="{% url 'class_programs' %}" class="menu-item">
+        Class Programs
+      </a>
+      <a href="#" class="menu-item">
+        Settings
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      {% if user.is_authenticated %}
+      <a href="{% url 'logout' %}" class="logout">
+        Log out
+      </a>
+      {% else %}
+      <a href="{% url 'login' %}" class="logout">
+        Log in
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMenu()"></div>
+
+  <div class="maincontainer">
+    <header class="centerBody">
+      <div class="eclipse1"></div>
+      <div class="eclipse2"></div>
+      <div class="content">
+        <h1 class="manageClass">Welcome, ADMIN!</h1>
+        <p class="catchPhrase">EduPlanner as an intuitive and beginner-friendly class program table creator.</p>
+        <button class="startCreating" onclick="window.location.href='{% url 'create_timetable' %}'">
+          Start Creating
+          <span class="icon"></span>
+        </button>
+      </div>
+      <div class="BrowserFrame">
+        <img src="{% static 'images/Browser Frame real.svg' %}">
+      </div>
+    </header>
+
+    <!-- School Scheduling Details -->
+    <div class="schedDetails">
+      <div class="schedDetails-container">
+        <div class="schedDetails-content">
+          <h2>School Scheduling Details</h2>
+          <h3>Edit your General Scheduling Details</h3>
+          <a href="{% url 'school_scheduling_details' %}" class="enterSchedDetails">
+            Base Table Management
+          </a>
+          <h4>Input and manage teacher information, section details, and subject assignments for each grade level. This
+            will serve as the foundation for creating your class schedules.</h4>
+        </div>
+        <div class="schedDetails-vid" onclick="openVideoModal()">
+          <video id="preview-video" autoplay loop muted>
+            <source src="{% static 'images/video1.mp4' %}" type="video/mp4">Your browser does not support the video tag.
+          </video>
+          <div class="video-play-overlay">
+            <span class="play-icon">▶</span>
+            <span class="click-text">Click to enlarge</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="video-modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="closeVideoModal()">&times;</span>
+        <video id="modal-video" controls>
+          <source src="{% static 'images/video1.mp4' %}" type="video/mp4">Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <!-- My Class Programs Section -->
+    <section id="classPrograms" class="class-programs">
+      <h2 class="section-title">My Class Programs</h2>
+      <div class="program-list">
+        <!-- Add Program Card -->
+        <div class="program-card add-program">
+          <div class="add-program-content" onclick="window.location.href='{% url 'create_timetable' %}'">
+            <span class="material-symbols-outlined">add_circle</span>
+            <h3>Add New Program</h3>
+            <p>Create a new class program for another school year</p>
+          </div>
+        </div>
+        <!-- programs cards -->
+      </div>
+    </section>
+
+    <footer>
+      <div class="contactinfo">
+        <h3>Contact us:</h3>
+        <a href="mailto:mlbico@gbox.adnu.edu.ph">mlbico@gbox.adnu.edu.ph</a>
+        <a href="mailto:grsalen@gbox.adnu.edu.ph">grsalen@gbox.adnu.edu.ph</a>
+        <a href="mailto:jfvillareal@gbox.adnu.edu.ph">jfvillareal@gbox.adnu.edu.ph</a>
+        <a href="mailto:jvpalomania@gbox.adnu.edu.ph">jvpalomania@gbox.adnu.edu.ph</a>
+      </div>
+      <div class="branding">
+        <h1>Your UI-intuitive Class Program Creator</h1>
+        <hr>
+        <h4>EduPlanner</h4>
+      </div>
+    </footer>
+  </div>
+  <script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+
+</html>

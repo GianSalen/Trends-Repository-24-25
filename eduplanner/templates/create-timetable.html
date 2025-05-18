@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Timetable - EduPlanner</title>    {% load static %}    <link rel="stylesheet" href="{% static 'css/create-timetable.css' %}">
+    <link rel="stylesheet" href="{% static 'css/create-timetable-update.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modal-styles.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script>
+        // Pass Django URLs to JavaScript
+        const dashboardUrl = "{% url 'dashboard' %}";
+    </script>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navTop">
+        <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+        <div class="profile-section">
+            <div class="profile-pic">
+                <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <div class="ProfileName">{{ user.get_full_name }}</div>
+               <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+            </div>
+        </div>
+
+        <div class="links">
+            <div class="smalllogo">
+                <img src="{% static 'images\EduPlannerLogo.jpg' %}" alt="EduPlanner Logo">
+            </div>
+            <a href="{% url 'dashboard' %}" class="home">Home</a>
+            <a href="{% url 'about_page' %}">About</a>
+            <a href="{% url 'contact_page' %}">Contact</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="log-in">Log out</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="log-in">Log in</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="close-btn" onclick="toggleMenu()">&times;</div>
+        </div>
+        <div class="sidebar-profile">
+            <div class="profile-pic">
+                <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <div class="ProfileName">{{ user.get_full_name }}</div>
+                <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{% url 'profile_settings' %}" class="menu-item">
+                Profile
+            </a>
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                Dashboard
+            </a>
+            <a href="{% url 'school_scheduling_details' %}" class="menu-item">
+                Base Table Management
+            </a>
+            <a href="{% url 'create_timetable' %}" class="menu-item active">
+                Create Timetable
+            </a>
+            <a href="{% url 'class_programs' %}" class="menu-item">
+                Class Programs
+            </a>
+            <a href="#" class="menu-item">
+                Settings
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="{% url 'login' %}" class="logout">
+                Log out
+            </a>
+
+        </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <!-- Main Content -->
+    <div class="maincontainer">
+        <div class="header-section">
+            <div class="left-section">
+                <a href="{% url 'dashboard' %}" class="back-button">
+                    <img src="{% static 'images/backicon.svg' %}" alt="Back" class="back-icon">
+                    <span class="back-text">Back</span>
+                </a>
+            </div>
+
+            <div class="view-timetables">
+                <button class="view-button" onclick="toggleTimetableList()">
+                    <span>View Class Programs</span>
+                    <span class="material-icons">expand_more</span>
+                </button>
+                <div class="timetable-dropdown" id="timetableList">
+                    <!-- Timetables will be populated here -->
+                    <div class="empty-timetables" id="emptyTimetables">
+                        <span class="material-icons">event_busy</span>
+                        <p>No Class Programs created yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Title and School Year Row -->
+        <div class="title-wrapper">
+            <input type="text" id="timetableTitle" class="title-input" placeholder="Enter timetable name"
+                value="New Timetable" oninput="handleTitleChange()">
+            <div class="school-year-selector">
+                <span>School Year:</span>
+                <div class="year-input-group">
+                    <input type="number" id="startYear" class="year-input" min="2000" max="2099" value="2023"
+                        onchange="updateEndYear()">
+                    <span class="year-separator">-</span>
+                    <input type="number" id="endYear" class="year-input" readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Form -->
+        <div class="setup-container" id="setupForm">
+            <h2>Timetable Setup</h2>
+            <div class="setup-form">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="gradeLevel">Grade Level:</label>
+                        <select id="gradeLevel" required onchange="updateSectionsList()">
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startTime">Start Time:</label>
+                        <input type="time" id="startTime" value="08:00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endTime">End Time:</label>
+                        <input type="time" id="endTime" value="17:00">
+                    </div>
+                </div>
+
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="timeInterval">Time Interval (minutes):</label>
+                        <input type="number" id="timeInterval" min="30" max="120" step="30" value="60"
+                            onchange="validateTimeInterval(this)">
+                        <small class="input-hint">Enter a value between 30 and 120 minutes</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Available Sections:</label>
+                        <div id="sectionsContainer" class="sections-list">
+                        </div>
+                        <small class="input-hint">Sections are loaded from Base Table Management</small>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button class="create-button" onclick="generateTimetable()">Create Timetable</button>
+                    <button class="save-button" onclick="saveTimetableChanges()" disabled>Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timetable Container -->
+        <div id="timetableContainer" class="timetable-container" style="display: none;">
+            <!-- Tab Navigation -->
+            <div class="timetable-tabs">
+                <button id="dailyTabBtn" class="tab-button active">Daily View</button>
+                <button id="weeklyTabBtn" class="tab-button">Weekly View</button>
+            </div>
+
+            <!-- Daily View Tab -->
+            <div id="dailyView" class="tab-content active">
+                <div class="view-controls">
+                    <div class="control-row">
+                        <div class="day-selector">
+                            <label for="daySelect">Select Day:</label>
+                            <select id="daySelect" onchange="changeDayView()">
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                            </select>
+                        </div>
+                        <div class="day-display"></div>
+                    </div>
+                </div>
+
+                <div class="timetable">
+                    <table class="timetable-daily" id="timetable">
+                        <thead id="timetable-header"></thead>
+                        <tbody id="timetable-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Weekly View Tab -->
+            <div id="weeklyView" class="tab-content">
+                <div class="view-controls">
+                    <div class="section-selector">
+                        <label for="weeklyViewSelect">Select Section:</label>
+                        <select id="weeklyViewSelect">
+                            <option value="">Select Section</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="weekly-timetable-container">
+                    <table class="timetable-weekly" id="weekly-timetable">
+                        <thead id="weekly-header"></thead>
+                        <tbody id="weekly-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="timetable-actions">
+                <button class="save-button" onclick="saveTimetableToDatabase()">Save to Database</button>
+                <div class="export-container">
+                    <button class="export-button" onclick="toggleExportOptions()">
+                        <img src="{% static 'images/exporticon.svg' %}" alt="Export">
+                        Export
+                    </button>
+                    <div class="export-dropdown" id="exportOptions">
+                        <div class="export-option" onclick="exportTimetable('pdf')">Export as PDF</div>
+                        <div class="export-option" onclick="exportTimetable('excel')">Export as Excel</div>
+                        <div class="export-option" onclick="exportTimetable('image')">Export as Image</div>
+                    </div>
+                </div>
+            </div>
+        </div>        <!-- Edit Cell Dialog -->
+        <div id="editCellDialog" class="schedule-modal">
+            <div class="schedule-modal-content">
+                <div class="schedule-modal-header">
+                    <h3 class="schedule-modal-title">Edit Schedule</h3>
+                    <button class="close-modal" onclick="closeEditDialog()">&times;</button>
+                </div>
+                
+                <div class="time-slot-info">
+                    <!-- Time slot information will be populated here -->
+                    <p id="editCellTimeInfo"></p>
+                </div>
+
+                <div class="schedule-form">
+                    <div class="schedule-form-group">
+                        <label class="toggle-container">
+                            <input type="checkbox" id="customToggle" onchange="toggleCustomInput()">
+                            <span class="toggle-label">Custom Activity</span>
+                        </label>
+                    </div>
+
+                    <div id="standardInputs">
+                        <div class="schedule-form-group">
+                            <label for="subjectSelect">Subject</label>
+                            <select id="subjectSelect">
+                                <option value="">Select Subject</option>
+                            </select>
+                        </div>
+
+                        <div class="schedule-form-group">
+                            <label for="teacherSelect">Teacher</label>
+                            <select id="teacherSelect">
+                                <option value="">Select Teacher</option>
+                            </select>
+                        </div>
+
+                        <div class="schedule-form-group">
+                            <label for="roomInput">Room</label>
+                            <input type="text" id="roomInput" placeholder="Enter room number">
+                        </div>
+                    </div>
+
+                    <div id="customInputs" style="display:none;">
+                        <div class="schedule-form-group">
+                            <label for="customSubject">Activity Name</label>
+                            <input type="text" id="customSubject" placeholder="Enter custom activity name">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="schedule-modal-actions">
+                    <button type="button" class="delete-schedule-btn" onclick="deleteCellData()">Delete</button>
+                    <button type="button" class="cancel-schedule-btn" onclick="closeEditDialog()">Cancel</button>
+                    <button type="button" class="save-schedule-btn" onclick="saveCellData()">Save</button>
+                </div>
+            </div>
+        </div>        <!-- Custom Alert Dialog -->
+        <div id="customAlert" class="custom-alert">
+            <div class="alert-content">
+                <div class="alert-header">
+                    <div class="alert-title">
+                        <span class="material-icons alert-icon">info</span>
+                        <h3>Notification</h3>
+                    </div>
+                    <span class="close-alert" onclick="closeCustomAlert()">&times;</span>
+                </div>
+                <div class="alert-body">
+                    <p id="alertMessage"></p>
+                </div>
+                <button onclick="closeCustomAlert()" class="alert-button">OK</button>
+            </div>
+        </div>        <!-- Time Slot Dialog -->
+        <div id="timeSlotDialog" class="edit-dialog">
+            <div class="dialog-content">                <div class="dialog-header">
+                    <h3 id="timeSlotDialogTitle">Edit Time Slot</h3>
+                    <span class="close-dialog" onclick="closeTimeSlotDialog()">&times;</span>
+                </div>
+
+                <div class="time-info-box">
+                    <div class="info-icon">
+                        <span class="material-icons">schedule</span>
+                    </div>
+                    <div class="info-content">
+                        <h4>Time Management</h4>
+                        <p>Setting appropriate time slots helps create an effective schedule for students and teachers.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="timeSlotStart">Start Time:</label>
+                    <input type="time" id="timeSlotStart" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="timeSlotEnd">End Time:</label>
+                    <input type="time" id="timeSlotEnd" class="form-input">
+                </div>
+
+                <div class="dialog-buttons">
+                    <button class="cancel-btn" onclick="closeTimeSlotDialog()">Cancel</button>
+                    <button class="save-btn" onclick="saveTimeSlot()">Save Changes</button>
+                </div>
+            </div>
+        </div>    </div>    <script src="{% static 'js/create-timetable.js' %}"></script>
+    <script src="{% static 'js/create-timetable-enhancements.js' %}"></script>
+    <script src="{% static 'js/modal-handler.js' %}"></script>
+</body>
+
+</html>

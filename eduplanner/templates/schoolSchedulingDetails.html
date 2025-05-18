@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Scheduling Details</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/schoolSchedulingDetails.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=SF+Pro+Text:wght@400&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navTop">
+        <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+        <div class="profile-section">
+            <div class="profile-pic">
+                <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <div class="ProfileName">{{ user.get_full_name }}</div>
+                <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+            </div>
+        </div>
+
+        <div class="links">
+            <div class="smalllogo">
+                <img src="{% static 'images\EduPlannerLogo.jpg' %}" alt="EduPlanner Logo">
+            </div>
+            <a href="{% url 'dashboard' %}" class="home">Home</a>
+            <a href="{% url 'about_page' %}">About</a>
+            <a href="{% url 'contact_page' %}">Contact</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="log-in">Log out</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="log-in">Log in</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="close-btn" onclick="toggleMenu()">&times;</div>
+        </div>
+        <div class="sidebar-profile">
+            <div class="profile-pic">
+                <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <div class="ProfileName">{{ user.get_full_name }}</div>
+                <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{% url 'profile_settings' %}" class="menu-item">
+                Profile
+            </a>
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                Dashboard
+            </a>
+            <a href="{% url 'school_scheduling_details' %}" class="menu-item active">
+                Base Table Management
+            </a>
+            <a href="{% url 'create_timetable' %}" class="menu-item">
+                Create Timetable
+            </a>
+            <a href="{% url 'class_programs' %}" class="menu-item">
+                Class Programs
+            </a>
+            <a href="#" class="menu-item">
+                Settings
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="{% url 'login' %}" class="logout">
+                Log out
+            </a>
+        </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <!-- Main Container -->
+    <div class="mainContainer">
+        <!-- School Scheduling Details Section -->
+        <section class="details-section">
+            <div class="section-header">
+                <h2>Basic Details</h2>
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-card">
+                    <h3>School Year</h3>
+                    <div class="input-wrapper year-selector">
+                        <input type="number" id="startYear" class="form-input" min="2000" max="2099" value="2023"
+                            onchange="updateEndYear()">
+                        <span class="year-separator">-</span>
+                        <input type="number" id="endYear" class="form-input" readonly value="2024">
+                        <button onclick="saveSchoolYear()" class="save-button">
+                            <span class="material-icons">check</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <h3>Start Date</h3>
+                    <div class="input-wrapper">
+                        <input type="date" id="startDate" value="2023-08-01" class="form-input">
+                    </div>
+                </div>
+                <div class="detail-card">
+                    <h3>End Date</h3>
+                    <div class="input-wrapper">
+                        <input type="date" id="endDate" value="2023-12-15" class="form-input">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Management Sections -->
+        <div class="management-container">
+            <div class="management-tabs">
+                <button class="tab-button active" onclick="switchManagementView('teachers')">Teacher Management</button>
+                <button class="tab-button" onclick="switchManagementView('sections')">Section Management</button>
+                <button class="tab-button" onclick="switchManagementView('subjects')">Subject Management</button>
+                <button class="tab-button" onclick="switchManagementView('advisers')">Adviser Management</button>
+                <button class="tab-button" onclick="switchManagementView('timeslots')">Timeslot Management</button>
+            </div>
+
+            <div class="management-content">
+                <!-- Teachers View -->
+                <div id="teachersView" class="management-view active">
+                    <div class="view-header">
+                        <h3>Teachers</h3>
+                        <button class="add-button" onclick="openTeacherForm()">Add Teacher</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="teachersTable">
+                            <!-- Table content -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sections View -->
+                <div class="management-view" id="sectionsView">
+                    <div class="view-header">
+                        <button onclick="openSectionForm()" class="add-button">
+                            <span>+</span> Add Section
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="sectionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Section ID</th>
+                                    <th>Name</th>
+                                    <th>Grade Level</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Subjects View -->
+                <div class="management-view" id="subjectsView">
+                    <div class="view-header">
+                        <button onclick="openSubjectForm()" class="add-button">
+                            <span>+</span> Add Subject
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="subjectsTable">
+                            <thead>
+                                <tr>
+                                    <th>Subject ID</th>
+                                    <th>Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Advisers View -->
+                <div class="management-view" id="advisersView">
+                    <div class="view-header">
+                        <button onclick="openAdviserForm()" class="add-button">
+                            <span>+</span> Assign Adviser
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="advisersTable">
+                            <thead>
+                                <tr>
+                                    <th>Section</th>
+                                    <th>Grade Level</th>
+                                    <th>Adviser</th>
+                                    <th>School Year</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Timeslots View -->
+                <div class="management-view" id="timeslotsView">
+                    <div class="view-header">
+                        <div class="day-filter-container">
+                            <div class="day-filter-tabs">
+                                <button class="tab-button day-tab active" onclick="filterTimeslotsByDay('all')">All
+                                    Days</button>
+                                <button class="tab-button day-tab"
+                                    onclick="filterTimeslotsByDay('Monday')">Monday</button>
+                                <button class="tab-button day-tab"
+                                    onclick="filterTimeslotsByDay('Tuesday')">Tuesday</button>
+                                <button class="tab-button day-tab"
+                                    onclick="filterTimeslotsByDay('Wednesday')">Wednesday</button>
+                                <button class="tab-button day-tab"
+                                    onclick="filterTimeslotsByDay('Thursday')">Thursday</button>
+                                <button class="tab-button day-tab"
+                                    onclick="filterTimeslotsByDay('Friday')">Friday</button>
+                            </div>
+                        </div>
+                        <button onclick="openTimeslotForm()" class="add-button">
+                            <span>+</span> Add Timeslot
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="timeslotsTable">
+                            <thead>
+                                <tr>
+                                    <th>Timeslot ID</th>
+                                    <th>Day</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Form Modal -->
+    <div id="teacherModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Teacher</h2>
+                <span class="close" onclick="closeTeacherForm()">&times;</span>
+            </div>
+            <form id="teacherForm" onsubmit="saveTeacher(event)">
+                <div class="form-group">
+                    <label for="teacherId">Teacher ID</label>
+                    <input type="text" id="teacherId" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="teacherName">Full Name</label>
+                    <input type="text" id="teacherName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="specialization">Subject Specialization</label>
+                    <select id="specialization" class="form-input" multiple required>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Science">Science</option>
+                        <option value="English">English</option>
+                        <option value="Filipino">Filipino</option>
+                        <option value="Social Studies">Social Studies</option>
+                        <option value="TLE">TLE</option>
+                        <option value="MAPEH">MAPEH</option>
+                        <option value="Values Education">Values Education</option>
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-button" onclick="saveTeacher()">Save Teacher</button>
+                    <button type="button" class="cancel-button" onclick="closeTeacherForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section Form Modal -->
+    <div id="sectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Section</h2>
+                <span class="close" onclick="closeSectionForm()">&times;</span>
+            </div>
+            <form id="sectionForm" onsubmit="saveSection(event)">
+                <div class="form-group">
+                    <label for="sectionId">Section ID</label>
+                    <input type="text" id="sectionId" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="sectionName">Section Name</label>
+                    <input type="text" id="sectionName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="gradeLevel">Grade Level</label>
+                    <select id="gradeLevel" class="form-input" required>
+                        <option value="">Select Grade Level</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-button">Save Section</button>
+                    <button type="button" class="cancel-button" onclick="closeSectionForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div> <!-- Subject Form Modal -->
+    <div id="subjectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Subject</h2>
+                <span class="close" onclick="closeSubjectForm()">&times;</span>
+            </div>
+            <form id="subjectForm" onsubmit="saveSubject(event)">
+                <div class="form-group">
+                    <label for="subjectId">Subject ID</label>
+                    <input type="text" id="subjectId" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="subjectName">Subject Name</label>
+                    <input type="text" id="subjectName" class="form-input" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-button">Save Subject</button>
+                    <button type="button" class="cancel-button" onclick="closeSubjectForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Adviser Form Modal -->
+    <div id="adviserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Assign Section Adviser</h2>
+                <span class="close" onclick="closeAdviserForm()">&times;</span>
+            </div>
+            <form id="adviserForm" onsubmit="saveAdviser(event)">
+                <div class="form-group">
+                    <label for="adviserSection">Section</label>
+                    <select id="adviserSection" class="form-input" required onchange="updateGradeLevel()">
+                        <option value="">Select Section</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="adviserGradeLevel">Grade Level</label>
+                    <input type="text" id="adviserGradeLevel" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="adviserTeacher">Adviser <span class="optional-tag">(Optional)</span></label>
+                    <select id="adviserTeacher" class="form-input">
+                        <option value="">No Adviser</option>
+                    </select>
+                    <small class="input-hint">Leave as "No Adviser" if no teacher is assigned</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-button">Save Section</button>
+                    <button type="button" class="cancel-button" onclick="closeAdviserForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timeslot Form Modal -->
+    <div id="timeslotModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Timeslot</h2>
+                <span class="close" onclick="closeTimeslotForm()">&times;</span>
+            </div>
+            <form id="timeslotForm" onsubmit="saveTimeslot(event)">
+                <div class="form-group">
+                    <label for="timeslotId">Timeslot ID</label>
+                    <input type="text" id="timeslotId" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="timeslotDay">Day</label>
+                    <select id="timeslotDay" class="form-input" required>
+                        <option value="">Select Day</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="timeslotType">Timeslot Type</label>
+                    <select id="timeslotType" class="form-input" required onchange="handleTimeslotTypeChange()">
+                        <option value="academic">Academic Period (Class)</option>
+                        <option value="lunch">Lunch Break</option>
+                        <option value="recess">Recess/Short Break</option>
+                        <option value="other">Other Activity</option>
+                    </select>
+                    <small class="input-hint" id="timeslotTypeHint">Academic periods should be at least 45
+                        minutes</small>
+                </div>
+                <div class="form-group" id="activityNameGroup" style="display: none;">
+                    <label for="activityName">Activity Name</label>
+                    <input type="text" id="activityName" class="form-input" placeholder="Enter activity name">
+                    <small class="input-hint">Provide a name for this custom activity</small>
+                </div>
+                <div id="durationErrorMessage" class="error-message" style="display: none;">
+                    <span class="material-icons">error</span>
+                    <span id="errorText">Academic periods must be at least 45 minutes long.</span>
+                </div>
+                <div class="form-group">
+                    <label for="startTime">Start Time</label>
+                    <input type="time" id="startTime" class="form-input" required onchange="updateDurationDisplay()">
+                </div>
+                <div class="form-group">
+                    <label for="endTime">End Time</label>
+                    <input type="time" id="endTime" class="form-input" required onchange="updateDurationDisplay()">
+                </div>
+                <div class="form-group">
+                    <label>Duration</label>
+                    <div id="durationDisplay" class="duration-display">--</div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-button">Save Timeslot</button>
+                    <button type="button" class="cancel-button" onclick="closeTimeslotForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'js/schoolSchedulingDetails.js' %}"></script>
+</body>
+
+</html>

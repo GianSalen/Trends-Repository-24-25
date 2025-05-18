@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Programs - EduPlanner</title>
+  <link rel="stylesheet" href="{% static 'css/class-programs-style.css' %}">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <nav class="navTop">
+        <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+        <div class="profile-section">
+            <div class="profile-pic">
+                <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <div class="ProfileName">{{ user.get_full_name }}</div>
+                <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+            </div>
+        </div>
+
+        <div class="links">
+            <div class="smalllogo">
+                <img src="{% static 'images\EduPlannerLogo.jpg' %}" alt="EduPlanner Logo">
+            </div>
+            <a href="{% url 'dashboard' %}" class="home">Home</a>
+            <a href="{% url 'about_page' %}">About</a>
+            <a href="{% url 'contact_page' %}">Contact</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="log-in">Log out</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="log-in">Log in</a>
+            {% endif %}
+        </div>
+    </nav>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="close-btn" onclick="toggleMenu()">&times;</div>
+    </div>
+    <div class="sidebar-profile">
+      <div class="profile-pic">
+        <img src="{% static 'images/Picture1.jpg' %}" alt="Profile Picture">
+      </div>
+      <div class="profile-info">
+        <div class="ProfileName">{{ user.get_full_name }}</div>
+        <div class="ProfilePosition">{{ user.is_staff|yesno:"Administrator,User" }}</div>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <a href="{% url 'profile_settings' %}" class="menu-item">
+        Profile
+      </a>
+      <a href="{% url 'dashboard' %}" class="menu-item">
+        Dashboard
+      </a>
+      <a href="{% url 'school_scheduling_details' %}" class="menu-item">
+        Base Table Management
+      </a>
+      <a href="{% url 'create_timetable' %}" class="menu-item">
+        Create Timetable
+      </a>
+      <a href="{% url 'class_programs' %}" class="menu-item active">
+        Class Programs
+      </a>
+      <a href="#" class="menu-item">
+        Settings
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      {% if user.is_authenticated %}
+      <a href="{% url 'logout' %}" class="logout">
+        Log out
+      </a>
+      {% else %}
+      <a href="{% url 'login' %}" class="logout">
+        Log in
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMenu()"></div>
+
+  <!-- Main Content -->
+  <div class="maincontainer">
+    <div class="page-header">
+      <h1>Class Programs</h1>
+      <div class="controls-container">
+        <div class="search-container">
+          <input type="text" id="searchInput" placeholder="Search by section or adviser..." onkeyup="filterPrograms()">
+          <span class="material-icons search-icon">search</span>
+        </div>
+        <div class="year-select-container">
+          <label for="schoolYearSelect">School Year:</label>
+          <select id="schoolYearSelect" onchange="loadProgramsByYear()">
+            <!-- School years will be dynamically populated -->
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div id="programsContainer" class="programs-container">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Loading class programs...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timetable View Modal -->
+  <div id="timetableModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div id="modalTitle" class="section-details">
+          <!-- Section details will be populated by JavaScript -->
+        </div>
+        <span class="close" onclick="closeModal()">&times;</span>
+      </div>
+      <div class="modal-tabs">
+        <!-- Day tabs -->
+        <div class="weekday-tab" data-day="Monday">Monday</div>
+        <div class="weekday-tab" data-day="Tuesday">Tuesday</div>
+        <div class="weekday-tab" data-day="Wednesday">Wednesday</div>
+        <div class="weekday-tab" data-day="Thursday">Thursday</div>
+        <div class="weekday-tab" data-day="Friday">Friday</div>
+      </div>
+      <div class="modal-body">
+        <div id="modalTimetable">
+          <!-- Timetable content will be populated by JavaScript -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="print-button" onclick="printTimetable()">
+          <span class="material-icons">print</span>
+          Print
+        </button>
+        <button type="button" class="export-button" onclick="exportTimetable()">
+          <span class="material-icons">picture_as_pdf</span>
+          Export as PDF
+        </button>
+        <a href="#" id="editTimetableButton" class="edit-button">
+          <span class="material-icons">edit</span>
+          Edit Timetable
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Container -->
+  <div id="customAlertContainer" class="custom-alert-container"></div>
+
+  <!-- Scripts -->
+  <script src="{% static 'js/classProgramScript.js' %}"></script>
+</body>
+
+</html>
