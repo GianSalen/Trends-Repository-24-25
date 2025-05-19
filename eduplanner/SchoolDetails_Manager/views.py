@@ -96,7 +96,11 @@ def contact_page(request):
     return render(request, 'contact.html')
 
 def profile_settings(request):
-    return render(request, 'profile_settings.html')
+    user = request.user
+    context = {
+        'user': user,
+    }
+    return render(request, 'profile_settings.html', context)
 
 def forgotpass(request):
     return render(request, 'forgotpass.html')
@@ -741,7 +745,6 @@ def remove_adviser(request):
                     'error': f'Related object not found: {str(e)}'
                 })
             
-            # Remove the advisory for this section in this school year
             deleted, _ = Advisory.objects.filter(
                 section=section,
                 school_year=school_year_range
@@ -908,7 +911,7 @@ def get_timetable(request):
                 'startTime': time_slot.start_time.strftime('%H:%M'),
                 'endTime': time_slot.end_time.strftime('%H:%M'),
                 'hasSchedule': schedule is not None,
-                'schoolYear': school_year  # Add school year to each time slot
+                'schoolYear': school_year
             }
             
             # Add schedule details if available
@@ -946,145 +949,69 @@ def get_timetable(request):
 
 def register(request):
     if request.method == 'POST':
-        # Get form data
-        username = request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         email = request.POST.get('email')
-        full_name = request.POST.get('full_name')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         
-        # Check if passwords match
-        if password != confirm_password:
-            return render(request, 'sign-in-eduplanner.html', {
-                'error_message': 'Passwords do not match'
-            })
+        # Validate inputs
+        if not all([first_name, last_name, email, password, confirm_password]):
+            return render(request, 'sign-in-eduplanner.html', {'error_message': 'All fields are required.'})
         
-        # Check if username already exists
-        if User.objects.filter(username=username).exists():
-            return render(request, 'sign-in-eduplanner.html', {
-                'error_message': 'Username already exists. Please choose a different username.',
-                'email': email,
-                'full_name': full_name
-            })
+        if password != confirm_password:
+            return render(request, 'sign-in-eduplanner.html', {'error_message': 'Passwords do not match.'})
         
         # Check if email already exists
         if User.objects.filter(email=email).exists():
-            return render(request, 'sign-in-eduplanner.html', {
-                'error_message': 'Email address already registered. Please use a different email.',
-                'username': username,
-                'full_name': full_name
-            })
+            return render(request, 'sign-in-eduplanner.html', {'error_message': 'Email already registered.'})
         
-        # Process the full name
-        name_parts = full_name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        # Check if it's an AJAX request
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-        
+        # Create user with email as username
         try:
-            # Create the user
             user = User.objects.create_user(
-                username=username,
+                username=email,  # We still need to set username as it's required by Django's User model
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name
             )
             
-            # Store username in session for display on success page
-            request.session['registered_username'] = username
-            
-            if is_ajax:
-                return JsonResponse({
-                    'success': True,
-                    'message': f'Account created successfully for {username}!',
-                    'redirect_url': '/login/'
-                })
-            else:
-                # Normal redirect for non-AJAX requests
-                messages.success(request, f'Account created successfully for {username}! You can now log in.')
-                return redirect('login')
-                
-        except IntegrityError as e:
-            # This catches any database integrity errors such as duplicate keys
-            error_message = 'Registration failed. This username or email may already be in use.'
-            
-            if is_ajax:
-                return JsonResponse({
-                    'success': False,
-                    'message': error_message
-                })
-            else:
-                return render(request, 'sign-in-eduplanner.html', {'error_message': error_message})
+            return render(request, 'log-in.html', {'success_message': 'Registration successful! Please log in.'})
         except Exception as e:
-            error_message = f'An error occurred during registration: {str(e)}'
-            
-            if is_ajax:
-                return JsonResponse({
-                    'success': False,
-                    'message': error_message
-                })
-            else:
-                return render(request, 'sign-in-eduplanner.html', {'error_message': error_message})
+            return render(request, 'sign-in-eduplanner.html', {'error_message': f'Registration failed: {str(e)}'})
     
     return render(request, 'sign-in-eduplanner.html')
 
 def registration_success(request):
-    username = request.session.get('registered_username', '')
-    # Clear the session variable after use
-    if 'registered_username' in request.session:
-        del request.session['registered_username']
-    
-    return render(request, 'registration_success.html', {'username': username})
-
+    return render(request, 'registration_success.html')
 
 def user_login(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
+        email = request.POST.get('email')
         password = request.POST.get('password')
-        remember_me = request.POST.get('remember_me')
         
-        # Authenticate the user
-        user = authenticate(request, username=username, password=password)
+        if not email or not password:
+            return render(request, 'log-in.html', {'error_message': 'Please enter both email and password.'})
+        
+        # Find the user by email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return render(request, 'log-in.html', {'error_message': 'Invalid email or password.'})
+        
+        # Authenticate using the retrieved username
+        user = authenticate(username=user.username, password=password)
         
         if user is not None:
-            # User is authenticated, log them in
-            login(request, user)
-            
-            # If remember me is not checked, set session to expire when browser closes
-            if not remember_me:
-                request.session.set_expiry(0)
-            
-            # Check if it's an AJAX request
-            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-            
-            if is_ajax:
-                return JsonResponse({
-                    'success': True,
-                    'message': f'Welcome back, {user.first_name}!',
-                    'redirect_url': '/dashboard/'
-                })
-            else:
-                # Redirect to dashboard page
+            if user.is_active:
+                login(request, user)
+                # Redirect based on user role or other criteria
                 return redirect('dashboard')
-        else:
-            # Authentication failed
-            error_message = 'Invalid username or password. Please try again.'
-            
-            # Check if it's an AJAX request
-            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-            
-            if is_ajax:
-                return JsonResponse({
-                    'success': False,
-                    'message': error_message
-                })
             else:
-                return render(request, 'log-in.html', {'error_message': error_message})
+                return render(request, 'log-in.html', {'error_message': 'Your account is disabled.'})
+        else:
+            return render(request, 'log-in.html', {'error_message': 'Invalid email or password.'})
     
-    # If GET request, show login form
     return render(request, 'log-in.html')
 
 def user_logout(request):
@@ -1227,8 +1154,8 @@ def api_export_timetable(request, section_id):
 
 def register_user(request):
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
-        username = request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
@@ -1238,29 +1165,16 @@ def register_user(request):
             messages.error(request, 'This email is already registered. Please use a different email address.')
             return redirect('sign_in')
         
-        # Check if the username already exists
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'This username is already taken. Please choose a different username.')
-            return redirect('sign_in')
-        
         # Continue with user creation if validation passes
         if password == confirm_password:
-            # Split full name into first and last name
-            name_parts = full_name.split(' ', 1)
-            first_name = name_parts[0]
-            last_name = name_parts[1] if len(name_parts) > 1 else ''
-            
-            # Create the user
+            # Create the user with email as username
             user = User.objects.create_user(
-                username=username,
+                username=email,  # Still need username field in Django's User model
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name
             )
-            
-            # Create user profile if needed
-            # UserProfile.objects.create(user=user)
             
             messages.success(request, 'Account created successfully! Please log in.')
             return redirect('login')
@@ -1275,3 +1189,69 @@ def check_email_exists(request):
     email = request.POST.get('email', '')
     exists = User.objects.filter(email=email).exists()
     return JsonResponse({'exists': exists})
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        try:
+            # Get data from request - now using separate name fields
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            contact_number = request.POST.get('contact_number')
+            password_change_enabled = request.POST.get('password_change_enabled') == 'true'
+            
+            # Update user
+            user = request.user
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            
+            # Update password if needed
+            if password_change_enabled:
+                new_password = request.POST.get('new_password')
+                if new_password:
+                    user.set_password(new_password)
+            
+            user.save()
+            
+            # Check for different possible file field names
+            photo = None
+            if 'photo' in request.FILES:
+                photo = request.FILES['photo']
+            elif 'photo-upload' in request.FILES:
+                photo = request.FILES['photo-upload']
+            elif 'profile_photo' in request.FILES:
+                photo = request.FILES['profile_photo']
+            
+            # Update profile if needed
+            if hasattr(user, 'profile'):
+                profile = user.profile
+                if photo:
+                    profile.photo = photo
+                if contact_number:
+                    profile.phone_number = contact_number
+                profile.save()
+            
+            return JsonResponse({'success': True, 'message': 'Profile updated successfully'})
+        except Exception as e:
+            print(f"Error updating profile: {str(e)}")
+            return JsonResponse({'success': False, 'message': f'Error: {str(e)}'}, status=400)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+@login_required
+def verify_password(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            password = data.get('password', '')
+            
+            # Check if password is correct for current user
+            success = request.user.check_password(password)
+            
+            return JsonResponse({'success': success})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
