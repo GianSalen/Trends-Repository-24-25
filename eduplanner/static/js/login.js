@@ -18,12 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Validate email before submitting
+            if (!validateEmailLogin()) {
+                e.preventDefault();
+            }
         });
     }
     
     // Helper function to show error
     function showError(message) {
-        // Remove any existing error messages
         const existingError = document.querySelector('.error-message-container');
         if (existingError) {
             existingError.remove();
@@ -36,5 +39,35 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const formHeader = document.querySelector('.form-header');
         formHeader.insertAdjacentElement('afterend', errorDiv);
+    }
+
+    function validateEmailLogin() {
+        const emailInput = document.getElementById('email');
+        if (!emailInput) return true;
+        
+        const email = emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!emailRegex.test(email)) {
+            showError(emailInput, 'Please enter a valid email address');
+            return false;
+        }
+        
+        removeError(emailInput);
+        return true;
+    }
+
+    // Toggle password visibility function (if you have one)
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.querySelector('.toggle-password');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.textContent = 'visibility_off';
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.textContent = 'visibility';
+        }
     }
 });

@@ -1,485 +1,480 @@
-// profile-settings.js - Shared functionality for profile settings pages
+// Toggle sidebar menu
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('active');
+  document.getElementById('sidebar-overlay').classList.toggle('active');
+}
+
+// Store a single instance of the modal
+let passwordModal = null;
+let passwordChangeEnabled = false;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize profile settings form validation
-    initializeFormValidation();
-    
-    // Add event listeners for form submissions
-    setupFormSubmissions();
-    
-    // Set up password security
-    setupPasswordSecurity();
-    
-    // Add animation classes to elements
-    document.querySelectorAll('.profile-settings-container').forEach((container, index) => {
-        container.style.animationDelay = `${index * 0.2}s`;
+  console.log("Profile settings JS loaded");
+  
+  // Get elements
+  const passwordFields = document.querySelector('.password-fields');
+  const changePasswordBtn = document.getElementById('changePasswordBtn');
+  const modalElement = document.getElementById('passwordVerificationModal');
+  const confirmBtn = document.getElementById('confirmPasswordBtn');
+  
+  // Set up profile photo change preview
+  const photoUpload = document.getElementById('photo-upload');
+  const profileImage = document.getElementById('profile-image');
+  
+  if (photoUpload && profileImage) {
+    photoUpload.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          profileImage.src = e.target.result;
+        };
+        reader.readAsDataURL(this.files[0]);
+      }
     });
-});
-
-// Setup password security - hide password fields by default
-function setupPasswordSecurity() {
-    // Create secure password section with locked state
-    const passwordSection = document.querySelector('.password-section');
-    if (!passwordSection) return;
+  }
+  
+  // Setup toggle password visibility buttons
+  setupPasswordVisibilityToggles();
+  
+  // Initialize modal with different backdrop setting
+  if (modalElement) {
+    // Dispose of any existing modal to prevent duplicates
+    bootstrap.Modal.getOrCreateInstance(modalElement)?.dispose();
     
-    // Hide password fields initially and show unlock button
-    const passwordFields = passwordSection.querySelectorAll('.form-group:not(:first-child)');
-    passwordFields.forEach(field => {
-        field.style.display = 'none';
-    });
-    
-    // Create unlock button
-    const unlockBtn = document.createElement('button');
-    unlockBtn.type = 'button';
-    unlockBtn.className = 'btn unlock-btn';
-    unlockBtn.innerHTML = '<span class="material-icons">lock</span> Change Password';
-    
-    // Insert button after the first form group (current password)
-    const firstFormGroup = passwordSection.querySelector('.form-group');
-    if (firstFormGroup) {
-        firstFormGroup.style.display = 'none'; // Hide current password field too
-        firstFormGroup.after(unlockBtn);
-    } else {
-        passwordSection.appendChild(unlockBtn);
-    }
-    
-    // Add event listener to unlock button
-    unlockBtn.addEventListener('click', function() {
-        showPasswordConfirmationDialog();
-    });
-}
-
-// Show password confirmation dialog
-function showPasswordConfirmationDialog() {
-    // Create modal overlay
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal-backdrop';
-    
-    // Create modal container
-    const modalContainer = document.createElement('div');
-    modalContainer.className = 'modal-container';
-    
-    // Modal content
-    modalContainer.innerHTML = `
-        <div class="modal-header">
-            <h3>Confirm Your Password</h3>
-            <button type="button" class="close-button">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p>For security reasons, please enter your current password to make changes.</p>
-            <div class="form-group">
-                <label for="security-password">Current Password</label>
-                <div class="password-input-container">
-                    <input type="password" id="security-password" class="form-input" placeholder="Enter your current password">
-                    <button type="button" class="toggle-password" data-target="security-password">
-                        <span class="material-icons">visibility</span>
-                    </button>
-                </div>
-                <div class="error-message"></div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn secondary cancel-btn">Cancel</button>
-            <button type="button" class="btn primary confirm-btn">Confirm</button>
-        </div>
-    `;
-    
-    // Append modal to body
-    modalOverlay.appendChild(modalContainer);
-    document.body.appendChild(modalOverlay);
-    
-    // Show modal with animation
-    setTimeout(() => {
-        modalOverlay.classList.add('show');
-    }, 10);
-    
-    // Close button event
-    const closeButton = modalContainer.querySelector('.close-button');
-    closeButton.addEventListener('click', () => {
-        closePasswordDialog(modalOverlay);
+    // Create a new modal instance
+    passwordModal = new bootstrap.Modal(modalElement, {
+      backdrop: true, // Allow clicking outside to dismiss
+      keyboard: true  // Allow ESC key to dismiss
     });
     
-    // Cancel button event
-    const cancelButton = modalContainer.querySelector('.cancel-btn');
-    cancelButton.addEventListener('click', () => {
-        closePasswordDialog(modalOverlay);
-    });
-    
-    // Toggle password visibility
-    const toggleButton = modalContainer.querySelector('.toggle-password');
-    toggleButton.addEventListener('click', function() {
-        const targetId = this.getAttribute('data-target');
-        const passwordInput = document.getElementById(targetId);
-        const icon = this.querySelector('span');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            icon.textContent = 'visibility_off';
-        } else {
-            passwordInput.type = 'password';
-            icon.textContent = 'visibility';
+    // Handle modal hidden event to ensure cleanup
+    modalElement.addEventListener('hidden.bs.modal', function() {
+      console.log("Modal hidden event fired");
+      // Clean up any leftover backdrops
+      setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 0) {
+          console.log(`Removing ${backdrops.length} leftover backdrop(s)`);
+          backdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
         }
+      }, 300);
     });
-    
-    // Click outside to close
-    modalOverlay.addEventListener('click', function(event) {
-        if (event.target === modalOverlay) {
-            closePasswordDialog(modalOverlay);
-        }
-    });
-    
-    // Confirm button event
-    const confirmButton = modalContainer.querySelector('.confirm-btn');
-    confirmButton.addEventListener('click', () => {
-        const passwordInput = document.getElementById('security-password');
-        const password = passwordInput.value;
-        
-        if (!password) {
-            const errorMessage = modalContainer.querySelector('.error-message');
-            errorMessage.textContent = 'Please enter your current password';
-            return;
-        }
-        
-        // In a real implementation, you would verify this password with the server
-        // Here we're simulating a successful password verification
-        verifyCurrentPassword(password)
-            .then(isValid => {
-                if (isValid) {
-                    // Password correct - show password fields
-                    showPasswordFields();
-                    closePasswordDialog(modalOverlay);
-                } else {
-                    // Password incorrect - show error
-                    const errorMessage = modalContainer.querySelector('.error-message');
-                    errorMessage.textContent = 'Incorrect password. Please try again.';
-                }
-            })
-            .catch(error => {
-                console.error('Error verifying password:', error);
-                showNotification('Error verifying password. Please try again.', 'error');
-            });
-    });
-    
-    // Focus on password input
-    setTimeout(() => {
-        document.getElementById('security-password').focus();
-    }, 300);
-}
-
-// Simulate password verification with server
-function verifyCurrentPassword(password) {
-    // In a real app, this would make an API call to verify the password
-    return new Promise((resolve) => {
-        // Simulate network delay
-        setTimeout(() => {
-            // For demo purposes, accept any password over 4 characters
-            // In production, this should call your API
-            resolve(password.length >= 4);
-        }, 800);
-    });
-}
-
-// Show password fields after successful verification
-function showPasswordFields() {
-    const passwordSection = document.querySelector('.password-section');
-    if (!passwordSection) return;
-    
-    // Show all password fields
-    const passwordFields = passwordSection.querySelectorAll('.form-group');
-    passwordFields.forEach(field => {
-        field.style.display = 'block';
-    });
-    
-    // Remove the unlock button
-    const unlockBtn = passwordSection.querySelector('.unlock-btn');
-    if (unlockBtn) {
-        unlockBtn.remove();
-    }
-    
-    // Add a "cancel password change" button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'btn text-btn cancel-password-btn';
-    cancelBtn.innerHTML = 'Cancel password change';
-    passwordSection.appendChild(cancelBtn);
-    
-    // Add event listener to cancel button
-    cancelBtn.addEventListener('click', function() {
-        // Reset password fields
-        const inputs = passwordSection.querySelectorAll('input[type="password"]');
-        inputs.forEach(input => {
-            input.value = '';
-        });
-        
-        // Hide password fields again
-        setupPasswordSecurity();
-        
-        // Remove this button
-        this.remove();
-    });
-    
-    // Focus on current password field
-    const currentPasswordField = passwordSection.querySelector('input[type="password"]');
-    if (currentPasswordField) {
-        currentPasswordField.focus();
-    }
-}
-
-// Close password confirmation dialog
-function closePasswordDialog(modalOverlay) {
-    modalOverlay.classList.remove('show');
-    setTimeout(() => {
-        modalOverlay.remove();
-    }, 300);
-}
-
-// Form validation
-function initializeFormValidation() {
-    // Password validation
-    const newPasswordField = document.getElementById('new-password');
-    const confirmPasswordField = document.getElementById('confirm-password');
-    
-    if (newPasswordField && confirmPasswordField) {
-        confirmPasswordField.addEventListener('blur', function() {
-            if (this.value && this.value !== newPasswordField.value) {
-                showFormError(this, 'Passwords do not match');
-            } else {
-                clearFormError(this);
-            }
-        });
-        
-        newPasswordField.addEventListener('input', function() {
-            if (confirmPasswordField.value) {
-                if (this.value !== confirmPasswordField.value) {
-                    showFormError(confirmPasswordField, 'Passwords do not match');
-                } else {
-                    clearFormError(confirmPasswordField);
-                }
-            }
-        });
-    }
-    
-    // Email validation
-    const emailField = document.getElementById('email');
-    if (emailField) {
-        emailField.addEventListener('blur', function() {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (this.value && !emailRegex.test(this.value)) {
-                showFormError(this, 'Please enter a valid email address');
-            } else {
-                clearFormError(this);
-            }
-        });
-    }
-    
-    // Phone number validation
-    const phoneField = document.getElementById('contactNumber');
-    if (phoneField) {
-        phoneField.addEventListener('blur', function() {
-            const phoneRegex = /^[0-9\-\+\s\(\)]{7,20}$/;
-            if (this.value && !phoneRegex.test(this.value)) {
-                showFormError(this, 'Please enter a valid phone number');
-            } else {
-                clearFormError(this);
-            }
-        });
-    }
-}
-
-// Form submission handling
-function setupFormSubmissions() {
-    document.querySelectorAll('.settings-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Check for any validation errors
-            const hasErrors = form.querySelectorAll('.form-group.error').length > 0;
-            if (hasErrors) {
-                showNotification('Please fix the errors before submitting', 'error');
-                return;
-            }
-            
-            // Simulate form submission
-            const submitButton = form.querySelector('.save-btn');
-            const originalText = submitButton.textContent;
-            submitButton.textContent = 'Saving...';
-            submitButton.disabled = true;
-            
-            // In a real implementation, you would send the form data to the server using fetch or XMLHttpRequest
-            setTimeout(() => {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
-                
-                // Highlight fields to indicate they were saved
-                form.querySelectorAll('input, select').forEach(field => {
-                    field.classList.add('field-saved');
-                    setTimeout(() => {
-                        field.classList.remove('field-saved');
-                    }, 2000);
-                });
-                
-                showNotification('Changes saved successfully', 'success');
-            }, 1000);
-        });
-    });
-    
-    // Cancel button handling
-    document.querySelectorAll('.cancel-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            // In a real implementation, you would reset the form to its original values
-            button.closest('form').reset();
-            showNotification('Changes discarded', 'info');
-        });
-    });
-    
-    // Profile form submission
-    document.getElementById('profile-form').addEventListener('submit', function(e) {
+  }
+  
+  // Change password button click
+  if (changePasswordBtn) {
+    changePasswordBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      console.log("Change password button clicked");
       
-      // Password validation if change is enabled
-      if (passwordChangeEnabled) {
-        const newPassword = document.getElementById('new-password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
-        
-        if (newPassword && newPassword !== confirmPassword) {
-          showNotification('New passwords do not match!', 'error');
-          return;
-        }
+      // Reset form before showing
+      const passwordInput = document.getElementById('verify-password');
+      if (passwordInput) {
+        passwordInput.value = '';
+        passwordInput.classList.remove('is-invalid');
       }
       
-      // Get CSRF token
-      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      const errorElement = document.getElementById('password-verification-error');
+      if (errorElement) errorElement.textContent = '';
       
-      // Create form data
-      const formData = new FormData(this);
-      
-      // Handle full name - split into first and last name for the server
-      const fullName = document.getElementById('full-name').value.trim();
-      const nameParts = fullName.split(' ');
-      
-      if (nameParts.length >= 2) {
-        // Extract first and last names
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ');
-        
-        // Replace the full_name field with first_name and last_name
-        formData.delete('full_name');
-        formData.append('first_name', firstName);
-        formData.append('last_name', lastName);
+      // Show modal
+      if (passwordModal) {
+        passwordModal.show();
       } else {
-        // If only one word, use it as first name and leave last name blank
-        formData.delete('full_name');
-        formData.append('first_name', fullName);
-        formData.append('last_name', '');
+        console.error("Modal not initialized");
+      }
+    });
+  }
+  
+  // Confirm password button click
+  if (confirmBtn) {
+  confirmBtn.addEventListener('click', function() {
+      const passwordInput = document.getElementById('verify-password');
+      const password = passwordInput?.value;
+      const errorElement = document.getElementById('password-verification-error');
+      
+      if (!password) {
+        passwordInput.classList.add('is-invalid');
+        if (errorElement) errorElement.textContent = 'Please enter your password';
+        return;
       }
       
-      // Add password change flag
-      formData.append('password_change_enabled', passwordChangeEnabled);
-      
-      // Add the file if selected
-      const fileInput = document.getElementById('photo-upload');
-      if (fileInput.files.length > 0) {
-        formData.append('photo-upload', fileInput.files[0]);
-      }
-      
-      // Send data to server
-      fetch('/update-profile/', {
+      // Verify the password with the server
+      fetch('/verify-password/', {
         method: 'POST',
-        body: formData,
         headers: {
-          'X-CSRFToken': csrftoken
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
         },
-        credentials: 'same-origin'
+        body: JSON.stringify({ password: password })
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
+      .then(response => response.json())
       .then(data => {
         if (data.success) {
-          showNotification('Profile updated successfully!', 'success');
+          // Show password fields
+          if (passwordFields) passwordFields.style.display = 'block';
+          passwordChangeEnabled = true;
           
-          // Reset password fields if they were changed
-          if (passwordChangeEnabled) {
-            passwordGroups.forEach(group => {
-              const input = group.querySelector('input');
-              if (input) input.value = '';
-              group.style.display = 'none';
-            });
-            passwordChangeEnabled = false;
-            changePasswordBtn.style.display = 'block';
-          }
+          // Hide button and modal
+          if (changePasswordBtn) changePasswordBtn.style.display = 'none';
+          if (passwordModal) passwordModal.hide();
         } else {
-          showNotification(data.message || 'Error updating profile', 'error');
+          // Show error
+          passwordInput.classList.add('is-invalid');
+          if (errorElement) errorElement.textContent = 'Incorrect password';
         }
       })
       .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error updating profile. Please try again.', 'error');
+        console.error('Error verifying password:', error);
+        if (errorElement) errorElement.textContent = 'Error verifying password';
       });
     });
+  }
+  
+  // Setup form submission
+  setupFormSubmission();
+  
+  setupPasswordValidation();
+});
+
+// Function to set up password visibility toggles
+function setupPasswordVisibilityToggles() {
+  // Use event delegation for password visibility toggling
+  document.addEventListener('click', function(event) {
+    // Find closest toggle-password element
+    const toggleElement = event.target.closest('.toggle-password');
+    if (!toggleElement) return;
+    
+    const targetId = toggleElement.getAttribute('data-target');
+    const passwordInput = document.getElementById(targetId);
+    const icon = toggleElement.querySelector('.material-icons');
+    
+    if (passwordInput && icon) {
+      // Toggle the input type
+      passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+      
+      // Update the icon
+      icon.textContent = passwordInput.type === 'password' ? 'visibility' : 'visibility_off';
+    }
+  });
 }
 
-// Utility functions
-function showFormError(element, message) {
-    const formGroup = element.closest('.form-group');
-    formGroup.classList.add('error');
-    
-    let errorMessage = formGroup.querySelector('.error-message');
-    if (!errorMessage) {
-        errorMessage = document.createElement('div');
-        errorMessage.className = 'error-message';
-        formGroup.appendChild(errorMessage);
-    }
-    
-    errorMessage.textContent = message;
-}
-
-function clearFormError(element) {
-    const formGroup = element.closest('.form-group');
-    formGroup.classList.remove('error');
-    
-    const errorMessage = formGroup.querySelector('.error-message');
-    if (errorMessage) {
-        errorMessage.textContent = '';
-    }
-}
-
-function showNotification(message, type = 'info') {
-    // Check if a notification container exists, create one if not
-    let notificationContainer = document.getElementById('notification-container');
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'notification-container';
-        document.body.appendChild(notificationContainer);
-    }
-    
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    // Add close button
-    const closeButton = document.createElement('span');
-    closeButton.className = 'notification-close';
-    closeButton.innerHTML = '&times;';
-    closeButton.addEventListener('click', () => {
-        notification.classList.add('fadeOut');
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
+function setupPasswordValidation() {
+  const newPasswordInput = document.getElementById('new-password');
+  const confirmPasswordInput = document.getElementById('confirm-password');
+  const currentPasswordInput = document.getElementById('current-password');
+  
+  if (newPasswordInput && confirmPasswordInput) {
+    // Add input event listener to both password fields
+    [newPasswordInput, confirmPasswordInput].forEach(input => {
+      input.addEventListener('input', function() {
+        validatePasswords();
+      });
     });
     
-    notification.appendChild(closeButton);
-    notificationContainer.appendChild(notification);
+    // Add blur event to current password for server-side validation
+    if (currentPasswordInput) {
+      currentPasswordInput.addEventListener('blur', function() {
+        validateCurrentPassword();
+      });
+    }
+  }
+}
+
+function validateCurrentPassword() {
+  const currentPasswordInput = document.getElementById('current-password');
+  if (!currentPasswordInput || !currentPasswordInput.value) return;
+  
+  // Example of how to check current password against server
+  fetch('/api/verify-password/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({
+      current_password: currentPasswordInput.value
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.valid) {
+      currentPasswordInput.classList.remove('is-invalid');
+      currentPasswordInput.classList.add('is-valid');
+      
+      // Clear any error messages
+      const errorElement = currentPasswordInput.nextElementSibling;
+      if (errorElement && errorElement.classList.contains('invalid-feedback')) {
+        errorElement.style.display = 'none';
+      }
+    } else {
+      currentPasswordInput.classList.remove('is-valid');
+      currentPasswordInput.classList.add('is-invalid');
+      
+      // Show error message
+      let errorElement = currentPasswordInput.nextElementSibling;
+      if (!errorElement || !errorElement.classList.contains('invalid-feedback')) {
+        errorElement = document.createElement('div');
+        errorElement.classList.add('invalid-feedback');
+        currentPasswordInput.parentNode.appendChild(errorElement);
+      }
+      errorElement.textContent = 'Current password is incorrect';
+      errorElement.style.display = 'block';
+    }
+  })
+  .catch(error => {
+    console.error('Error verifying password:', error);
+  });
+}
+
+function validatePasswords() {
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  const confirmInput = document.getElementById('confirm-password');
+  const newPasswordInput = document.getElementById('new-password');
+  
+  // Reset validation state first
+  [newPasswordInput, confirmInput].forEach(input => {
+    input.classList.remove('is-valid', 'is-invalid');
     
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        notification.classList.add('fadeOut');
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 5000);
+    // Clear existing error messages
+    const errorElement = input.nextElementSibling;
+    if (errorElement && errorElement.classList.contains('invalid-feedback')) {
+      errorElement.style.display = 'none';
+    }
+  });
+  
+  // Only validate if both fields have values
+  if (newPassword && confirmPassword) {
+    if (newPassword !== confirmPassword) {
+      confirmInput.classList.add('is-invalid');
+      
+      // Get or create error element
+      let errorElement = confirmInput.nextElementSibling;
+      if (!errorElement || !errorElement.classList.contains('invalid-feedback')) {
+        errorElement = document.createElement('div');
+        errorElement.classList.add('invalid-feedback');
+        confirmInput.parentNode.appendChild(errorElement);
+      }
+      
+      errorElement.textContent = 'Passwords do not match';
+      errorElement.style.display = 'block';
+      return false;
+    } else {
+      // Passwords match
+      confirmInput.classList.add('is-valid');
+      newPasswordInput.classList.add('is-valid');
+      return true;
+    }
+  }
+  return true;
+}
+
+function getCSRFToken() {
+  const cookieValue = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1];
+  return cookieValue;
+}
+
+// In your form submission handler:
+function setupFormSubmission() {
+  const profileForm = document.getElementById('profile-form');
+  if (!profileForm) return;
+  
+  profileForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // First validate passwords
+    if (!validatePasswords()) {
+      // Focus on the confirm password field
+      document.getElementById('confirm-password').focus();
+      return;
+    }
+    
+    // Proceed with form submission
+    //password validation check before submitting
+    if (passwordChangeEnabled) {
+      const newPasswordInput = document.getElementById('new-password');
+      const confirmPasswordInput = document.getElementById('confirm-password');
+      
+      if (newPasswordInput.value || confirmPasswordInput.value) {
+        if (!validatePasswords()) {
+          showToast('Passwords do not match', 'danger');
+          confirmPasswordInput.focus();
+          return;
+        }
+        
+        // Additional password strength check (optional)
+        if (newPasswordInput.value.length < 8) {
+          showToast('Password must be at least 8 characters long', 'danger');
+          newPasswordInput.focus();
+          return;
+        }
+      }
+    }
+    
+    // Validate required fields
+    const firstNameInput = document.getElementById('first-name');
+    const lastNameInput = document.getElementById('last-name');
+    const emailInput = document.getElementById('email');
+    
+    if (firstNameInput && !firstNameInput.value.trim()) {
+      showToast('Please enter your first name', 'danger');
+      firstNameInput.focus();
+      return;
+    }
+    
+    if (lastNameInput && !lastNameInput.value.trim()) {
+      showToast('Please enter your last name', 'danger');
+      lastNameInput.focus();
+      return;
+    }
+    
+    if (emailInput && !emailInput.value.trim()) {
+      showToast('Please enter your email address', 'danger');
+      emailInput.focus();
+      return;
+    }
+    
+    // Create form data
+    const formData = new FormData(this);
+    
+    formData.append('password_change_enabled', passwordChangeEnabled);
+    
+    const fileInput = document.getElementById('photo-upload');
+    if (fileInput && fileInput.files.length > 0) {
+      formData.append('photo-upload', fileInput.files[0]);
+    }
+    
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrftoken) {
+      console.error('CSRF token not found');
+      showToast('Form submission error: CSRF token missing', 'danger');
+      return;
+    }
+    
+    // Show loading state
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton ? submitButton.textContent : 'Save Changes';
+    if (submitButton) {
+      submitButton.textContent = 'Saving...';
+      submitButton.disabled = true;
+    }
+    
+    // Send data
+    fetch('/update-profile/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken.value
+      },
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.text().then(text => {
+          try {
+            // Try to parse as JSON
+            const data = JSON.parse(text);
+            throw new Error(data.message || `Server error: ${response.status}`);
+          } catch (e) {
+            // If it's not valid JSON, return the raw text
+            throw new Error(`Server error: ${text || response.status}`);
+          }
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log("Server response:", data);
+      if (data.success) {
+        showToast('Profile updated successfully!', 'success');
+        
+        // Update the displayed name in the UI
+        const firstName = document.getElementById('first-name').value;
+        const lastName = document.getElementById('last-name').value;
+        const fullName = `${firstName} ${lastName}`.trim();
+        
+        // Update all instances of the user's name in the UI
+        document.querySelectorAll('.ProfileName').forEach(element => {
+          element.textContent = fullName;
+        });
+        
+        // Update the profile photo section name if it exists
+        const profileNameElement = document.querySelector('.profile-photo-section h2');
+        if (profileNameElement) {
+          profileNameElement.textContent = fullName;
+        }
+        
+        // Reset password fields if they were changed
+        if (passwordChangeEnabled) {
+          document.querySelectorAll('#current-password, #new-password, #confirm-password').forEach(input => {
+            if (input) input.value = '';
+          });
+          
+          const passwordFields = document.querySelector('.password-fields');
+          if (passwordFields) passwordFields.style.display = 'none';
+          
+          passwordChangeEnabled = false;
+          
+          const changePasswordBtn = document.getElementById('changePasswordBtn');
+          if (changePasswordBtn) changePasswordBtn.style.display = 'block';
+        }
+      } else {
+        showToast(data.message || 'Error updating profile', 'danger');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('Error updating profile. Please try again.', 'danger');
+    })
+    .finally(() => {
+      if (submitButton) {
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+      }
+    });
+  });
+}
+
+// Show Bootstrap toast notification
+function showToast(message, type = 'info') {
+  const toastContainer = document.querySelector('.toast-container');
+  if (!toastContainer) {
+    console.error('Toast container not found');
+    alert(message); // Fallback to alert if toast container doesn't exist
+    return;
+  }
+  
+  const toastId = 'toast-' + Date.now();
+  
+  const toastHTML = `
+    <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  `;
+  
+  toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+  
+  const toastElement = document.getElementById(toastId);
+  const toast = new bootstrap.Toast(toastElement, {
+    delay: 5000
+  });
+  
+  toast.show();
+  
+  toastElement.addEventListener('hidden.bs.toast', function() {
+    this.remove();
+  });
 }

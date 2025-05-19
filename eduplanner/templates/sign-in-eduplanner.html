@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EduPlanner Sign-In</title>
   {% load static %}
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="{% static 'css/sign-in-style.css' %}">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -49,13 +48,13 @@
         <form id="signInForm" method="post" action="{% url 'register' %}">
           {% csrf_token %}
           <div class="input-group">
-            <label for="name">Full Name</label>
-            <input type="text" id="name" name="full_name" placeholder="Full Name" required>
+            <label for="first-name">First Name</label>
+            <input type="text" id="first-name" name="first_name" placeholder="First Name" required>
           </div>
 
           <div class="input-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Username" required>
+            <label for="last-name">Last Name</label>
+            <input type="text" id="last-name" name="last_name" placeholder="Last Name" required>
           </div>
 
           <div class="input-group">

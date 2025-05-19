@@ -1,3 +1,6 @@
+/* Import font definitions */
+@import url('../css/fonts.css');
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -69,7 +72,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--body-font-family);
     line-height: 1.6;
     overflow-x: hidden;
 }
@@ -473,7 +476,6 @@ body {
     text-align: center;
 }
 
-/* Add a retry button for errors */
 .retry-button {
     display: inline-flex;
     align-items: center;
@@ -485,7 +487,7 @@ body {
     border-radius: 6px;
     margin-top: 16px;
     cursor: pointer;
-    font-family: inherit;
+    font-family: var(--body-font-family);
     font-size: 14px;
     transition: all 0.2s;
 }
@@ -1150,7 +1152,6 @@ body {
     border-color: #9747FF;
 }
 
-/* Add showCustomAlert function if it's missing */
 .custom-alert-container {
     position: fixed;
     top: 20px;

@@ -1,3 +1,6 @@
+/* Import font definitions */
+@import url('fonts.css');
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -74,7 +77,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--body-font-family);
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -467,7 +470,7 @@ body {
 }
 
 .manageClass {
-  font-family: 'Jost', sans-serif;
+  font-family: var(--heading-font-family);
   font-size: clamp(32px, 5vw, 48px);
   margin-bottom: 16px;
   line-height: 1.2;
@@ -481,7 +484,7 @@ body {
 }
 
 .startCreating {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--body-font-family);
   padding: 16px 32px;
   font-size: clamp(14px, 2vw, 16px);
   border-radius: 8px;
@@ -546,7 +549,7 @@ body {
 }
 
 .section-title {
-  font-family: 'Jost', sans-serif;
+  font-family: var(--heading-font-family);
   font-size: 28px;
   font-weight: 600;
   margin-bottom: 32px;
@@ -855,13 +858,12 @@ footer {
 }
 
 .schedDetails h2 {
-  font-family: 'Jost', sans-serif;
+  font-family: var(--heading-font-family);
   font-size: 28px;
   font-weight: 600;
   margin-bottom: 32px;
 }
 
-/* Add new flex container for schedule details */
 .schedDetails-container {
   display: flex;
   align-items: center;
@@ -1023,7 +1025,7 @@ footer {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 24px 16px;
   color: white;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: var(--body-font-family);
   margin-bottom: 0;
   margin-top: 150px;
 }

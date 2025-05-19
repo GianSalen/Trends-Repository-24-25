@@ -45,10 +45,7 @@ function initializeModals() {
                 if (typeof originalOpenEditDialog === 'function') {
                     originalOpenEditDialog(cell);
                 }
-                
-                // Set proper display properties for centering
-                editCellDialog.style.display = 'flex';
-                editCellDialog.style.alignItems = 'center';
+                  // Our CSS now handles the display properties via .show class
                 editCellDialog.style.justifyContent = 'center';
             };
         }

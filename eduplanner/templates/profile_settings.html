@@ -5,11 +5,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile Settings - EduPlanner</title>
-  <link rel="stylesheet" href="{% static 'css/profile-settings.css' %}">
+  <title>Profile Settings - EduPlanner</title>  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/profile-settings.css' %}">
 </head>
 
 <body>
@@ -91,488 +89,177 @@
   <!-- Main Content -->
   <div class="maincontainer">
     <div class="profile-settings-container">
-      <h1>Profile Settings</h1>
+      <h1 class="mb-4">Profile Settings</h1>
 
       <div class="settings-content">
-        <div class="profile-photo-section">
-          <div class="profile-photo">
+        <div class="profile-photo-section card mb-4 text-center py-4">
+          <!-- For profile photo, use user data instead of teacher -->
+          <div class="profile-photo mx-auto position-relative">
             <img
-              src="{% if teacher.profile_photo %}{{ teacher.profile_photo.url }}{% else %}{% static 'images/Picture1.jpg' %}{% endif %}"
-              alt="Profile photo" id="profile-image">
+              src="{% if user.profile_photo %}{{ user.profile_photo.url }}{% else %}{% static 'images/Picture1.jpg' %}{% endif %}"
+              alt="Profile photo" id="profile-image" class="img-fluid rounded-circle">
             <div class="photo-overlay">
-              <label for="photo-upload" class="change-photo-btn">
-                <span class="material-icons">photo_camera</span>
-                Change Photo
+              <label for="photo-upload" class="btn btn-primary btn-sm position-absolute bottom-0 end-0">
+                <span class="material-icons align-middle">photo_camera</span>
+                Change
               </label>
               <input type="file" id="photo-upload" name="photo-upload" accept="image/*" style="display: none;">
             </div>
           </div>
-          <h2>{{ teacher.first_name }} {{ teacher.last_name }}</h2>
-          <p>{{ teacher.position }}</p>
+          <!-- Use user data instead of teacher -->
+          <h2 class="mt-3">{{ user.get_full_name }}</h2>
+          <p class="text-muted">{% if user.is_staff %}Administrator{% else %}User{% endif %}</p>
         </div>
 
-        <form class="settings-form" id="profile-form" method="POST" enctype="multipart/form-data">
+        <!-- Profile Form -->
+        <form id="profile-form" class="settings-form needs-validation" novalidate>
           {% csrf_token %}
-          <div class="form-section">
-            <h3>Personal Information</h3>
-
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label for="first-name">Full Name</label>
-                <input type="text" id="first-name" name="first_name" value="{{ user.get_full_name }}" required>
-              </div>
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Personal Information</h5>
             </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <!-- Full Name Input - updated to split into first and last name -->
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="first-name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first-name" name="first_name" value="{{ user.first_name }}" required>
+                    <div class="invalid-feedback">Please provide your first name</div>
+                  </div>
+                </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" value="{{ user.email }}" required>
-              </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="last-name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last-name" name="last_name" value="{{ user.last_name }}" required>
+                    <div class="invalid-feedback">Please provide your last name</div>
+                  </div>
+                </div>
 
-              <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" value="{{ teacher.phone_number|default:'' }}">
-              </div>
-            </div>
+                <!-- Email Input -->
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    <div class="invalid-feedback">Please provide a valid email</div>
+                  </div>
+                </div>
 
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label for="department">Department</label>
-                <input type="text" id="department" name="department" value="{{ teacher.department }}">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section password-section">
-            <h3>Account Settings</h3>
-            <div class="form-row">
-              <div class="form-group full-width">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" value="{{ user.username }}" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="current-password">Current Password</label>
-              <div class="password-input-container">
-                <input type="password" id="current-password" name="current_password">
-                <button type="button" class="toggle-password" data-target="current-password">
-                  <span class="material-icons">visibility</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="new-password">New Password</label>
-              <div class="password-input-container">
-                <input type="password" id="new-password" name="new_password">
-                <button type="button" class="toggle-password" data-target="new-password">
-                  <span class="material-icons">visibility</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="confirm-password">Confirm New Password</label>
-              <div class="password-input-container">
-                <input type="password" id="confirm-password" name="confirm_password">
-                <button type="button" class="toggle-password" data-target="confirm-password">
-                  <span class="material-icons">visibility</span>
-                </button>
+                <!-- Contact Number -->
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="contactNumber" class="form-label">Contact Number</label>
+                    <input type="tel" class="form-control" id="contactNumber" name="contact_number" 
+                           value="{% if user.profile.phone_number %}{{ user.profile.phone_number }}{% endif %}">
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="form-actions">
-            <button type="submit" class="save-button">Save Changes</button>
-            <button type="button" class="cancel-button" onclick="location.href='{% url 'dashboard' %}'">Cancel</button>
+          <!-- Password Section -->
+          <div class="password-section card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Change Password</h5>
+              <!-- Change Password Button -->
+              <button type="button" class="btn btn-outline-purple" id="changePasswordBtn">
+                <span class="material-icons align-middle">lock</span> Change Password
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="password-fields" style="display: none;">
+                <!-- Current password -->
+                <div class="form-group mb-3">
+                  <label for="current-password" class="form-label">Current Password</label>
+                  <div class="position-relative">
+                    <input type="password" class="form-control pe-5" id="current-password" name="current_password">
+                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 toggle-password" 
+                          style="cursor: pointer;" data-target="current-password">
+                      <span class="material-icons">visibility</span>
+                    </span>
+                    <div class="invalid-feedback">Current password is incorrect</div>
+                  </div>
+                </div>
+
+                <!-- New password -->
+                <div class="form-group mb-3">
+                  <label for="new-password" class="form-label">New Password</label>
+                  <div class="position-relative">
+                    <input type="password" class="form-control pe-5" id="new-password" name="new_password">
+                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 toggle-password" 
+                          style="cursor: pointer;" data-target="new-password">
+                      <span class="material-icons">visibility</span>
+                    </span>
+                    <div class="invalid-feedback">Password must be at least 8 characters</div>
+                  </div>
+                </div>
+
+                <!-- Confirm password -->
+                <div class="form-group mb-3">
+                  <label for="confirm-password" class="form-label">Confirm New Password</label>
+                  <div class="position-relative">
+                    <input type="password" class="form-control pe-5" id="confirm-password" name="confirm_password">
+                    <span class="position-absolute top-50 end-0 translate-middle-y pe-3 toggle-password" 
+                          style="cursor: pointer;" data-target="confirm-password">
+                      <span class="material-icons">visibility</span>
+                    </span>
+                    <div class="invalid-feedback">Passwords do not match</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="button" class="btn btn-outline-secondary me-md-2" onclick="location.href='{% url 'dashboard' %}'">Cancel</button>
+            <!-- Save Changes Button -->
+            <button type="submit" class="btn btn-purple">Save Changes</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- Notification Dialog -->
-  <div class="notification" id="notification">
-    <div class="notification-content">
-      <span class="notification-icon success">
-        <span class="material-icons">check_circle</span>
-      </span>
-      <div class="notification-message">Profile updated successfully!</div>
-      <button class="notification-close" onclick="closeNotification()">×</button>
+  <!-- Toast Notification Container -->
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <!-- Toasts will be inserted here dynamically -->
+  </div>
+
+  <!-- Password Verification Modal -->
+  <div class="modal fade" id="passwordVerificationModal" tabindex="-1" aria-labelledby="passwordVerificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="passwordVerificationModalLabel">Confirm Your Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <!-- Modal password field -->
+        <div class="modal-body">
+          <p>For security reasons, please enter your current password to make changes.</p>
+          <div class="form-group">
+            <label for="verify-password" class="form-label">Current Password</label>
+            <div class="position-relative">
+              <input type="password" class="form-control pe-5" id="verify-password" placeholder="Enter your current password">
+              <span class="position-absolute top-50 end-0 translate-middle-y pe-3 toggle-password" 
+                    style="cursor: pointer;" data-target="verify-password">
+                <span class="material-icons">visibility</span>
+              </span>
+            </div>
+            <div class="invalid-feedback" id="password-verification-error"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmPasswordBtn">Confirm</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Scripts -->
-  <script>
-    // Toggle sidebar menu
-    function toggleMenu() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebar-overlay').classList.toggle('active');
-    }
-
-    // Toggle password visibility
-    document.querySelectorAll('.toggle-password').forEach(button => {
-      button.addEventListener('click', function () {
-        const targetId = this.getAttribute('data-target');
-        const passwordInput = document.getElementById(targetId);
-        const icon = this.querySelector('span');
-
-        if (passwordInput.type === 'password') {
-          passwordInput.type = 'text';
-          icon.textContent = 'visibility_off';
-        } else {
-          passwordInput.type = 'password';
-          icon.textContent = 'visibility';
-        }
-      });
-    });
-
-    // Profile image preview
-    document.getElementById('photo-upload').addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          document.getElementById('profile-image').src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Form submission
-    document.getElementById('profile-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      // Password validation
-      const newPassword = document.getElementById('new-password').value;
-      const confirmPassword = document.getElementById('confirm-password').value;
-
-      if (newPassword && newPassword !== confirmPassword) {
-        showNotification('New passwords do not match!', 'error');
-        return;
-      }
-
-      // Get CSRF token
-      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-      // Create form data
-      const formData = new FormData(this);
-
-      // Add the file if selected
-      const fileInput = document.getElementById('photo-upload');
-      if (fileInput.files.length > 0) {
-        formData.append('photo-upload', fileInput.files[0]);
-      }
-
-      // Send data to server
-      fetch('/update-profile/', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRFToken': csrftoken
-        },
-        credentials: 'same-origin'
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data.success) {
-            showNotification('Profile updated successfully!', 'success');
-          } else {
-            showNotification(data.message || 'Error updating profile', 'error');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          showNotification('Error updating profile. Please try again.', 'error');
-        });
-    });
-
-    // Show notification
-    function showNotification(message, type) {
-      const notification = document.getElementById('notification');
-      const messageElement = notification.querySelector('.notification-message');
-      const iconElement = notification.querySelector('.notification-icon');
-
-      messageElement.textContent = message;
-
-      if (type === 'success') {
-        iconElement.className = 'notification-icon success';
-        iconElement.querySelector('span').textContent = 'check_circle';
-      } else {
-        iconElement.className = 'notification-icon error';
-        iconElement.querySelector('span').textContent = 'error';
-      }
-
-      notification.classList.add('show');
-
-      // Automatically hide after 5 seconds
-      setTimeout(closeNotification, 5000);
-    }
-
-    // Close notification
-    function closeNotification() {
-      document.getElementById('notification').classList.remove('show');
-    }
-  </script>
-  <script>
-  // Toggle sidebar menu
-  function toggleMenu() {
-    document.getElementById('sidebar').classList.toggle('active');
-    document.getElementById('sidebar-overlay').classList.toggle('active');
-  }
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/profile-settings.js' %}"></script>
   
-  // Profile image preview
-  document.getElementById('photo-upload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        document.getElementById('profile-image').src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-  
-  // Handle password change request
-  let passwordChangeEnabled = false;
-  const passwordSection = document.querySelector('.password-section');
-  const passwordGroups = passwordSection.querySelectorAll('.form-group:not(:first-child)');
-  
-  // Hide password fields by default
-  passwordGroups.forEach(group => {
-    group.style.display = 'none';
-  });
-  
-  // Add "Change Password" button
-  const changePasswordBtn = document.createElement('button');
-  changePasswordBtn.type = 'button';
-  changePasswordBtn.className = 'change-password-btn';
-  changePasswordBtn.innerHTML = '<span class="material-icons">lock</span> Change Password';
-  passwordSection.querySelector('h3').after(changePasswordBtn);
-  
-  // Password change button click handler
-  changePasswordBtn.addEventListener('click', function() {
-    showPasswordConfirmation();
-  });
-  
-  // Show password confirmation dialog
-  function showPasswordConfirmation() {
-    // Create modal
-    const modal = document.createElement('div');
-    modal.className = 'password-modal';
-    modal.innerHTML = `
-      <div class="password-modal-content">
-        <div class="modal-header">
-          <h3>Confirm Your Password</h3>
-          <button type="button" class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>For security reasons, please enter your current password to make changes.</p>
-          <div class="form-group">
-            <label for="verify-password">Current Password</label>
-            <div class="password-input-container">
-              <input type="password" id="verify-password" placeholder="Enter your current password">
-              <button type="button" class="toggle-password" data-target="verify-password">
-                <span class="material-icons">visibility</span>
-              </button>
-            </div>
-            <div class="password-error"></div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="cancel-modal-btn">Cancel</button>
-          <button type="button" class="confirm-password-btn">Confirm</button>
-        </div>
-      </div>
-    `;
-    
-    // Add to body
-    document.body.appendChild(modal);
-    
-    // Add event listeners
-    modal.querySelector('.close-modal').addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
-    
-    modal.querySelector('.cancel-modal-btn').addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
-    
-    // Toggle password visibility in modal
-    modal.querySelector('.toggle-password').addEventListener('click', function() {
-      const targetId = this.getAttribute('data-target');
-      const passwordInput = document.getElementById(targetId);
-      const icon = this.querySelector('span');
-      
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.textContent = 'visibility_off';
-      } else {
-        passwordInput.type = 'password';
-        icon.textContent = 'visibility';
-      }
-    });
-    
-    // Verify password
-    modal.querySelector('.confirm-password-btn').addEventListener('click', () => {
-      const password = document.getElementById('verify-password').value;
-      const errorElement = modal.querySelector('.password-error');
-      
-      if (!password) {
-        errorElement.textContent = 'Please enter your password';
-        return;
-      }
-      
-      // Send password verification to server
-      verifyPassword(password)
-        .then(result => {
-          if (result.success) {
-            // Password verified, show change password fields
-            passwordGroups.forEach(group => {
-              group.style.display = 'block';
-            });
-            passwordChangeEnabled = true;
-            changePasswordBtn.style.display = 'none';
-            document.body.removeChild(modal);
-          } else {
-            // Show error
-            errorElement.textContent = 'Incorrect password';
-          }
-        })
-        .catch(error => {
-          errorElement.textContent = 'Error verifying password. Please try again.';
-          console.error('Password verification error:', error);
-        });
-    });
-    
-    // Focus on password field
-    setTimeout(() => {
-      document.getElementById('verify-password').focus();
-    }, 100);
-  }
-  
-  // Password verification function
-  function verifyPassword(password) {
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    return fetch('/verify-password/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
-      },
-      body: JSON.stringify({ password }),
-      credentials: 'same-origin'
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    });
-  }
-  
-  // Form submission
-  document.getElementById('profile-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Password validation if change is enabled
-    if (passwordChangeEnabled) {
-      const newPassword = document.getElementById('new-password').value;
-      const confirmPassword = document.getElementById('confirm-password').value;
-      
-      if (newPassword && newPassword !== confirmPassword) {
-        showNotification('New passwords do not match!', 'error');
-        return;
-      }
-    }
-    
-    // Get CSRF token
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    // Create form data
-    const formData = new FormData(this);
-    
-    // Add password change flag
-    formData.append('password_change_enabled', passwordChangeEnabled);
-    
-    // Add the file if selected
-    const fileInput = document.getElementById('photo-upload');
-    if (fileInput.files.length > 0) {
-      formData.append('photo-upload', fileInput.files[0]);
-    }
-    
-    // Send data to server
-    fetch('/update-profile/', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      },
-      credentials: 'same-origin'
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success) {
-        showNotification('Profile updated successfully!', 'success');
-        
-        // Reset password fields if they were changed
-        if (passwordChangeEnabled) {
-          passwordGroups.forEach(group => {
-            const input = group.querySelector('input');
-            if (input) input.value = '';
-            group.style.display = 'none';
-          });
-          passwordChangeEnabled = false;
-          changePasswordBtn.style.display = 'block';
-        }
-      } else {
-        showNotification(data.message || 'Error updating profile', 'error');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      showNotification('Error updating profile. Please try again.', 'error');
-    });
-  });
-  
-  // Show notification
-  function showNotification(message, type) {
-    const notification = document.getElementById('notification');
-    const messageElement = notification.querySelector('.notification-message');
-    const iconElement = notification.querySelector('.notification-icon');
-    
-    messageElement.textContent = message;
-    
-    if (type === 'success') {
-      iconElement.className = 'notification-icon success';
-      iconElement.querySelector('span').textContent = 'check_circle';
-    } else {
-      iconElement.className = 'notification-icon error';
-      iconElement.querySelector('span').textContent = 'error';
-    }
-    
-    notification.classList.add('show');
-    
-    // Automatically hide after 5 seconds
-    setTimeout(closeNotification, 5000);
-  }
-  
-  // Close notification
-  function closeNotification() {
-    document.getElementById('notification').classList.remove('show');
-  }
-</script>
 </body>
-
 </html>

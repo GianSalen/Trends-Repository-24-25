@@ -50,8 +50,8 @@ urlpatterns = [
     path('log-in.html', views.login_page, name='login_html'),
     path('sign-in-eduplanner.html', views.sign_in, name='sign_in_html'),
     path('forgotpass.html', views.forgot_password, name='forgot_password_html'),
-    path('about/', views.about_page, name='about_page'),
-    path('contact/', views.contact_page, name='contact_page'),
+    path('aboutpage.html', views.about_page, name='about_page'),
+    path('contact.html', views.contact_page, name='contact_page'),
     
     # School Year endpoints
     path('api/school-year/current/', views.get_current_school_year, name='get_current_school_year'),
@@ -93,6 +93,10 @@ urlpatterns = [
     
     # Email verification
     path('check-email-exists/', check_email_exists, name='check_email_exists'),
+
+    # Profile update URLs
+    path('update-profile/', views.update_profile, name='update_profile'),
+    path('verify-password/', views.verify_password, name='verify_password'),
 
     
 

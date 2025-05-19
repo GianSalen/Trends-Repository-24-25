@@ -2,11 +2,10 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EduPlanner Login</title>
   {% load static %}
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <!-- <link rel="stylesheet" href="{% static 'css/log-in.css' %}"> -->
   <link rel="stylesheet" href="{% static 'css/sign-in-style.css' %}">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -53,58 +52,52 @@
         <form id="loginForm" method="post" action="{% url 'login' %}">
           {% csrf_token %}
 
+          <!-- Email field with consistent styling -->
           <div class="input-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
           </div>
 
+          <!-- Password field with consistent styling -->
           <div class="input-group">
             <label for="password">Password</label>
             <div class="password-input-container">
               <input type="password" id="password" name="password" placeholder="Enter your password" required>
-              <button type="button" class="toggle-password" data-target="password">
+              <span class="toggle-password" data-target="password">
                 <span class="material-icons">visibility</span>
-              </button>
+              </span>
             </div>
           </div>
 
-          <div class="remember-forgot-container"
-            style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 20px;">
-            <div class="remember-me" style="display: flex; align-items: center;">
-              <input type="checkbox" id="remember" name="remember"
-                style="margin-right: 8px; width: 16px; height: 16px; accent-color: #5B2B99;">
-              <label for="remember" style="font-size: 14px; color: #475569;">Remember me</label>
+          <div class="options">
+            <div class="remember-me">
+              <input type="checkbox" id="remember" name="remember">
+              <label for="remember">Remember me</label>
             </div>
-            <a href="{% url 'forgotpass' %}" class="forgot-password"
-              style="color: #5B2B99; font-size: 14px; text-decoration: none; transition: color 0.2s ease;">Forgot
-              password?</a>
+            <a href="{% url 'forgotpass' %}" class="forgot-password">Forgot password?</a>
           </div>
 
-          <div class="form-actions">
-            <button type="submit" class="submit-btn">Log In</button>
-          </div>
+          <button type="submit" class="submit-btn">Log In</button>
+          
+          <p class="create-account">
+            Don't have an account? <a href="{% url 'sign_in' %}">Create an account</a>
+          </p>
         </form>
-        <p class="create-account">
-          Don't have an account? <a href="{% url 'sign_in' %}">Create an account</a>
-        </p>
       </div>
     </div>
   </div>
 
-  <script src="{% static 'js/login.js' %}"></script>
   <script>
-    // Password toggle functionality
-    document.addEventListener('DOMContentLoaded', function () {
-      const toggleBtn = document.querySelector('.toggle-password');
-
-      if (toggleBtn) {
-        toggleBtn.addEventListener('click', function (e) {
-          e.preventDefault(); // Prevent form submission if clicked
-
+    // Password visibility toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtns = document.querySelectorAll('.toggle-password');
+      
+      toggleBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
           const targetId = this.getAttribute('data-target');
           const passwordInput = document.getElementById(targetId);
           const icon = this.querySelector('.material-icons');
-
+          
           if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
             icon.textContent = 'visibility_off';
@@ -113,7 +106,7 @@
             icon.textContent = 'visibility';
           }
         });
-      }
+      });
     });
   </script>
 </body>

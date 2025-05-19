@@ -1,5 +1,8 @@
+/* Import font definitions */
+@import url('../css/fonts.css');
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: var(--body-font-family);
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;

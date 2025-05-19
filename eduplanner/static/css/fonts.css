@@ -1,0 +1,45 @@
+/* Font definitions for EduPlanner */
+
+/* Import Jost for headings */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap');
+
+/* Import Poppins for body text */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+/* Root font variables */
+:root {
+  --heading-font-family: 'Jost', sans-serif;
+  --body-font-family: 'Poppins', sans-serif;
+}
+
+/* Base font styles */
+body {
+  font-family: var(--body-font-family);
+}
+
+/* Heading styles */
+h1, h2, h3, h4, h5, h6,
+.heading, .title, .header-text, 
+.section-title, .page-title,
+.modal-title, .card-title {
+  font-family: var(--heading-font-family);
+  font-weight: 600;
+}
+
+/* Apply heading font to common classes */
+.sidebar-header,
+.section-header,
+.view-header,
+.modal-header,
+.card-header,
+.form-header {
+  font-family: var(--heading-font-family);
+}
+
+/* Dashboard specific elements */
+.dashboard-title,
+.welcome-heading,
+.stats-heading,
+.ProfileName {
+  font-family: var(--heading-font-family);
+}

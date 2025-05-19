@@ -1,7 +1,10 @@
+/* Import font definitions */
+@import url('../css/fonts.css');
+
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--body-font-family);
 }
 
 
@@ -366,7 +369,7 @@ body {
   }
   
   .sign-in-button:hover {
-    transform: none; /* Removes hover effect on touch devices */
+    transform: none;
   }
 }
 
@@ -528,8 +531,6 @@ body {
   }
 }
 
-/* Add these styles to your existing CSS */
-
 .error-message-container {
   background-color: #fee2e2;
   color: #b91c1c;
@@ -623,7 +624,7 @@ body {
   border-radius: 8px;
   background-color: #5B2B99; /* Main purple color */
   color: white;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -691,4 +692,55 @@ button[type="submit"],
 button[type="submit"]:hover,
 .primary-button:hover {
   background-color: #8042d2;
+}
+
+/* Password field with internal toggle button */
+.position-relative {
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+/* Ensure the input has proper padding for the icon */
+.position-relative input.form-control {
+  padding-right: 40px; /* Make room for the icon */
+  box-sizing: border-box;
+}
+
+/* Position the toggle button within the input field */
+.position-relative .toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Adjust the icon size */
+.position-relative .toggle-password .material-icons {
+  font-size: 1.2rem;
+}
+
+/* Hover effect for the toggle */
+.position-relative .toggle-password:hover {
+  color: #9747FF;
+}
+
+.position-relative input.form-control {
+  width: 100%;
+  display: block;
+  background-clip: padding-box;
+}
+
+.position-relative .toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }

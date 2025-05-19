@@ -473,11 +473,9 @@ function openEditDialog(cell) {
                 <strong>Section:</strong> ${sectionName}
             `;
         }
-    }
-
-    // Show the modal with proper styling
-    dialog.style.display = 'flex';
+    }    // Show the modal with proper styling
     dialog.classList.add('show');
+    document.body.classList.add('modal-open');
 
     // Get the current grade level
     const gradeLevel = document.getElementById('gradeLevel').value;
@@ -553,13 +551,13 @@ function toggleCustomInput() {
     }
 }
 
-// Enhanced saveCellData function to handle days
+// Update the saveCellData function
 function saveCellData() {
     const isCustom = document.getElementById('customToggle').checked;
     let cellContent;
 
     if (isCustom) {
-        // Custom input mode
+        // Custom input mode handling remains the same
         const customSubject = document.getElementById('customSubject').value.trim();
 
         if (!customSubject) {
@@ -577,10 +575,18 @@ function saveCellData() {
         const teacherSelect = document.getElementById('teacherSelect');
         const roomInput = document.getElementById('roomInput');
 
+        // Field validation remains the same
         if (!subjectSelect.value || !teacherSelect.value || !roomInput.value.trim()) {
-            showCustomAlert('Please fill in all fields');
+            let missingFields = [];
+            if (!subjectSelect.value) missingFields.push('Subject');
+            if (!teacherSelect.value) missingFields.push('Teacher');
+            if (!roomInput.value.trim()) missingFields.push('Room');
+            
+            showCustomAlert(`Please fill in the following required fields: ${missingFields.join(', ')}`, 'warning');
             return;
-        }        // Get selected subject and teacher names
+        }
+
+        // Get selected subject and teacher names
         const subjects = window.allSubjects || [];
         const teachers = window.allTeachers || [];
 
@@ -589,6 +595,17 @@ function saveCellData() {
 
         if (!subject || !teacher) {
             showCustomAlert('Subject or teacher not found');
+            return;
+        }
+
+        // Check for teacher conflicts
+        const timeSlotId = currentEditingCell.dataset.time;
+        const day = currentEditingCell.dataset.day;
+        const sectionId = currentEditingCell.dataset.section;
+        
+        // Check if teacher is already scheduled in this timeslot with another section
+        if (!checkTeacherAvailability(teacherSelect.value, timeSlotId, day, sectionId)) {
+            showCustomAlert(`${teacher.name} is already teaching another section at this time slot on ${day}.`, 'error');
             return;
         }
 
@@ -700,6 +717,7 @@ function closeEditDialog() {
     
     if (dialog) {
         dialog.classList.remove('show');
+        document.body.classList.remove('modal-open');
         
         // Hide overlay with fade out effect
         if (dialogOverlay) {
@@ -708,13 +726,11 @@ function closeEditDialog() {
         
         // Use setTimeout to allow animation to complete before hiding the modal
         setTimeout(() => {
-            dialog.style.display = 'none';
-            
             // Remove overlay from DOM after animation
             if (dialogOverlay) {
                 dialogOverlay.style.display = 'none';
             }
-        }, 300); // Matches the fadeIn animation duration
+        }, 300); // Matches the transition duration
     }
     
     currentEditingCell = null;
@@ -1502,24 +1518,66 @@ async function deleteSchedule(scheduleId) {
     }
 }
 
-// Display a custom alert message to the user
-function showCustomAlert(message) {
+// Add icons to make warnings more visible
+function showCustomAlert(message, type = 'info', autoDismiss = true, dismissTime = 5000) {
+    let icon = 'info';
+    if (type === 'warning') icon = 'warning';
+    else if (type === 'error') icon = 'error';
+    else if (type === 'success') icon = 'check_circle';
+
     const alertBox = document.createElement('div');
-    alertBox.className = 'custom-alert';
+    alertBox.className = `custom-alert ${type}`;
     alertBox.innerHTML = `
         <div class="alert-content">
+            <div class="alert-header">
+                <span class="material-icons">${icon}</span>
+                <h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
+            </div>
             <p>${message}</p>
-            <button onclick="this.parentElement.parentElement.remove()">OK</button>
+            <button onclick="closeCustomAlertModal(this)">OK</button>
         </div>
     `;
     document.body.appendChild(alertBox);
 
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        if (alertBox.parentElement) {
-            alertBox.remove();
-        }
-    }, 5000);
+    // Show immediately
+    alertBox.classList.add('show');
+    document.body.classList.add('modal-open');
+
+    // Create overlay if it doesn't exist
+    let dialogOverlay = document.querySelector('.dialog-overlay');
+    if (!dialogOverlay) {
+        dialogOverlay = document.createElement('div');
+        dialogOverlay.className = 'dialog-overlay';
+        document.body.appendChild(dialogOverlay);
+    }
+
+    // Show overlay immediately
+    dialogOverlay.style.display = 'block';
+    dialogOverlay.style.opacity = '1';
+
+    // Auto-dismiss if enabled
+    if (autoDismiss) {
+        setTimeout(() => {
+            closeCustomAlertModal(alertBox);
+        }, dismissTime);
+    }
+}
+
+function closeCustomAlertModal(element) {
+    const alertBox = element.closest('.custom-alert') || element;
+    const dialogOverlay = document.querySelector('.dialog-overlay');
+
+    // Immediately remove the alert box and overlay
+    if (alertBox.parentElement) {
+        alertBox.remove();
+    }
+
+    if (dialogOverlay) {
+        dialogOverlay.style.display = 'none';
+        dialogOverlay.style.opacity = '0';
+    }
+
+    document.body.classList.remove('modal-open');
 }
 
 // Toggle export options dropdown
@@ -1682,7 +1740,17 @@ function changeDayView() {
 // Function to edit a time slot
 function editTimeSlot(timeSlotId, sectionId) {
     console.log('editTimeSlot called with timeSlotId:', timeSlotId, 'sectionId:', sectionId);
-    showCustomAlert('Editing time slots is not implemented in this version');
+    
+    // Show the time slot dialog
+    const dialog = document.getElementById('timeSlotDialog');
+    if (dialog) {
+        // Populate dialog fields if needed
+        // Show dialog
+        dialog.classList.add('show');
+        document.body.classList.add('modal-open');
+    } else {
+        showCustomAlert('Error: The time slot dialog is missing from the page.');
+    }
 }
 
 // Function to save the time slot changes
@@ -1694,7 +1762,13 @@ function saveTimeSlot() {
 
 function closeTimeSlotDialog() {
     const dialog = document.getElementById('timeSlotDialog');
-    if (dialog) dialog.style.display = 'none';
+    if (dialog) {
+        dialog.classList.remove('show');
+        setTimeout(() => {
+            // This timeout should match the CSS transition time
+            document.body.classList.remove('modal-open');
+        }, 300);
+    }
 }
 
 // Create a new time slot
@@ -1720,4 +1794,63 @@ function closeCustomAlert() {
 function deleteTimeRow(timeSlotId, sectionId) {
     console.log('deleteTimeRow called with timeSlotId:', timeSlotId, 'sectionId:', sectionId);
     showCustomAlert('Deleting time slots is not implemented in this version');
+}
+
+function checkTeacherAvailability(teacherId, timeSlotId, day, excludeSectionId) {
+    // Look through all filled cells for this timeslot and day
+    const conflictingCells = timetableData.cells.filter(cell => 
+        cell.timeSlot === timeSlotId && 
+        cell.day === day && 
+        cell.sectionId !== excludeSectionId && // Exclude current section
+        cell.content && 
+        !cell.content.isCustom && 
+        cell.content.teacherId === teacherId
+    );
+    
+    return conflictingCells.length === 0;
+}
+
+function highlightConflicts() {
+    // Clear previous highlights
+    document.querySelectorAll('.schedule-cell.conflict').forEach(cell => {
+        cell.classList.remove('conflict');
+    });
+    
+    // Group cells by timeSlot and day
+    const timeSlotMap = {};
+    
+    document.querySelectorAll('.schedule-cell.filled').forEach(cell => {
+        const content = JSON.parse(cell.dataset.content || '{}');
+        if (content.isCustom) return; // Skip custom cells
+        
+        const key = `${cell.dataset.time}_${cell.dataset.day}`;
+        if (!timeSlotMap[key]) timeSlotMap[key] = [];
+        timeSlotMap[key].push({
+            cell,
+            teacherId: content.teacherId,
+            teacher: content.teacher
+        });
+    });
+    
+    // Check for conflicts
+    Object.values(timeSlotMap).forEach(cells => {
+        const teacherMap = {};
+        
+        cells.forEach(cellData => {
+            if (!teacherMap[cellData.teacherId]) {
+                teacherMap[cellData.teacherId] = [];
+            }
+            teacherMap[cellData.teacherId].push(cellData.cell);
+        });
+        
+        // Highlight cells with conflicts
+        Object.values(teacherMap).forEach(conflictCells => {
+            if (conflictCells.length > 1) {
+                conflictCells.forEach(cell => {
+                    cell.classList.add('conflict');
+                    cell.title = 'Conflict: Teacher is scheduled in multiple sections at this time';
+                });
+            }
+        });
+    });
 }

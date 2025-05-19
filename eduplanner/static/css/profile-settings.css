@@ -1,9 +1,10 @@
+@import url('fonts.css');
 /* Base Styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--body-font-family);
 }
 
 body {
@@ -11,8 +12,6 @@ body {
   color: #1e293b;
   line-height: 1.5;
 }
-
-/* Navigation Bar */
 /* Navigation Bar */
 .navTop {
   position: fixed;
@@ -265,6 +264,8 @@ body {
   margin-left: 0;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 @media (min-width: 1024px) {
@@ -759,6 +760,32 @@ body {
     background-color: #e2e8f0;
 }
 
+.btn-purple {
+  background-color: #9747FF;
+  border-color: #9747FF;
+  color: white;
+}
+
+.btn-purple:hover,
+.btn-purple:focus,
+.btn-purple:active {
+  background-color: #8033FF;
+  border-color: #8033FF;
+  color: white;
+}
+
+.btn-outline-purple {
+  color: #9747FF;
+  border-color: #9747FF;
+  background-color: transparent;
+}
+
+.btn-outline-purple:hover,
+.btn-outline-purple:focus {
+  background-color: rgba(151, 71, 255, 0.1);
+  color: #8033FF;
+}
+
 /* Password Change Styles */
 .change-password-btn {
   display: flex;
@@ -928,8 +955,6 @@ body {
     height: 100px;
   }
 }
-
-/* Add a back button at the top */
 .back-nav {
   display: flex;
   align-items: center;
@@ -955,4 +980,107 @@ body {
 
 .back-btn span {
   font-size: 20px;
+}
+
+/* Profile photo customizations */
+.profile-photo {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  margin: 0 auto;
+  position: relative;
+}
+
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-overlay {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.profile-photo:hover .photo-overlay {
+  opacity: 1;
+}
+
+/* Sidebar-specific styles (keep them) */
+/* ... your existing sidebar styles ... */
+
+/* Field highlighting when saved */
+.field-saved {
+  animation: highlight-saved 2s;
+}
+
+@keyframes highlight-saved {
+  0% { background-color: transparent; }
+  30% { background-color: rgba(40, 167, 69, 0.2); }
+  100% { background-color: transparent; }
+}
+
+/* Ensure modal has proper z-index */
+.modal {
+  z-index: 1050;
+}
+
+.modal-backdrop {
+  z-index: 1040;
+}
+
+/* Reduce interference from other elements */
+.maincontainer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Make sure form fields in the modal are visible */
+.modal .form-group {
+  position: relative;
+  z-index: 1060;
+}
+
+/* Ensure password verification modal is above other elements */
+#passwordVerificationModal {
+  z-index: 1060 !important;
+}
+.form-group .position-relative .toggle-password {
+  cursor: pointer;
+  z-index: 5;
+  background: transparent;
+  border: none;
+  color: #6c757d;
+}
+
+.form-group .position-relative .toggle-password:hover {
+  color: #495057;
+}
+
+/* Ensure the input has proper padding for the icon */
+.form-group .position-relative input.form-control {
+  padding-right: 2.5rem;
+}
+
+/* Material icons positioning */
+.form-group .position-relative .toggle-password .material-icons {
+  font-size: 1.2rem;
+}
+
+/* Modal buttons */
+.modal .btn-primary {
+  background-color: #9747FF !important;
+  border-color: #9747FF !important;
+}
+
+.modal .btn-primary:hover,
+.modal .btn-primary:focus {
+  background-color: #8033FF !important;
+  border-color: #8033FF !important;
+}
+
+/* Focus state for modal elements */
+.modal-content .form-control:focus {
+  border-color: #9747FF !important;
+  box-shadow: 0 0 0 0.25rem rgba(151, 71, 255, 0.25) !important;
 }

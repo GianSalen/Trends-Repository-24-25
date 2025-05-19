@@ -1,3 +1,6 @@
+/* Import font definitions */
+@import url('../css/fonts.css');
+
 * {
   margin: 0;
   padding: 0;
@@ -5,7 +8,7 @@
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: var(--body-font-family);
   line-height: 1.6;
   background-color: #f8fafc;
   color: #1e293b;
@@ -208,10 +211,9 @@ body {
   width: 100%;
   padding: 12px 0;
   border: none;
-  border-radius: 8px;
-  background-color: #5B2B99; /* Main purple color */
+  border-radius: 8px;  background-color: #5B2B99; /* Main purple color */
   color: white;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;

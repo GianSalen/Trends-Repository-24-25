@@ -1,3 +1,6 @@
+/* Import font definitions */
+@import url('../css/fonts.css');
+
 /* Modal Styles for EduPlanner
    Consolidated and organized modal styles for better maintainability
    and responsive design across all devices

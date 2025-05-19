@@ -1,3 +1,6 @@
+/* Import font definitions */
+@import url('../css/fonts.css');
+
 * {
   margin: 0;
   padding: 0;
@@ -5,7 +8,7 @@
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: var(--body-font-family);
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -2160,7 +2163,6 @@ th {
     z-index: 55;
 }
 
-/* Add ripple effect to cells for better interaction feedback */
 .timetable-daily td[onclick],
 .timetable-weekly td[onclick] {
     position: relative;
@@ -2301,7 +2303,6 @@ th {
     color: #334155;
 }
 
-/* Add to your CSS file */
 .schedule-cell.conflict {
     border: 2px solid #f44336;
     background-color: rgba(244, 67, 54, 0.1);

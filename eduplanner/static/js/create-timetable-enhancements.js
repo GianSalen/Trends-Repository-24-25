@@ -5,7 +5,6 @@
 
 // Wait for document to be ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Add enhanced modal transition effects
     const editCellDialog = document.getElementById('editCellDialog');
     
     if (editCellDialog) {
@@ -21,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const scheduleCells = document.querySelectorAll('.schedule-cell');
     scheduleCells.forEach(cell => {
         cell.addEventListener('click', function() {
-            // Add visual feedback when clicked
             this.classList.add('cell-clicked');
             setTimeout(() => {
                 this.classList.remove('cell-clicked');

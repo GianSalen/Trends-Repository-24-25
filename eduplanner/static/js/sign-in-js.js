@@ -69,17 +69,12 @@ function setupModalListeners() {
 // Set up form validation for the sign-in form
 function setupFormValidation() {
     const nameInput = document.getElementById('name');
-    const usernameInput = document.getElementById('username');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirm-password');
     
     if (nameInput) {
         nameInput.addEventListener('blur', validateName);
-    }
-    
-    if (usernameInput) {
-        usernameInput.addEventListener('blur', validateUsername);
     }
     
     if (emailInput) {
@@ -105,22 +100,22 @@ function setupFormSubmission() {
             
             console.log("Submit button clicked");
             
-            // Log validation results
-            const isNameValid = validateName();
-            const isUsernameValid = validateUsername();
+            // Only check first name, last name, email and password
+            const isFirstNameValid = validateField('first-name', 'First name is required');
+            const isLastNameValid = validateField('last-name', 'Last name is required');
             const isEmailValid = validateEmail();
             const isPasswordValid = validatePassword();
             const isConfirmPasswordValid = validateConfirmPassword();
             
             console.log({
-                isNameValid,
-                isUsernameValid, 
+                isFirstNameValid,
+                isLastNameValid, 
                 isEmailValid,
                 isPasswordValid,
                 isConfirmPasswordValid
             });
             
-            if (!isNameValid || !isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
+            if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
                 console.log("Validation failed - Form not submitting");
                 return;
             }
@@ -129,10 +124,94 @@ function setupFormSubmission() {
             
             // Show loading state
             const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.textContent = 'Processing...';
-            submitButton.disabled = true;
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = 'Submitting...';
             
-            // Continued AJAX code...
+            // Get form data and create FormData object
+            const formData = new FormData(form);
+            
+            // Get CSRF token
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Log the form data being sent for debugging
+            for (const pair of formData.entries()) {
+                console.log(`${pair[0]}: ${pair[1]}`);
+            }
+            
+            // Send AJAX request to the correct Django URL
+            fetch('/register/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            throw new Error(data.message || `Server error: ${response.status}`);
+                        }
+                        return data;
+                    });
+                } else {
+                    // If not JSON, handle as text
+                    return response.text().then(text => {
+                        if (!response.ok) {
+                            throw new Error(`Server error: ${text || response.status}`);
+                        }
+                        // Try to parse as JSON anyway
+                        try {
+                            return JSON.parse(text);
+                        } catch(e) {
+                            console.log("Response is not JSON:", text);
+                            // If it's not JSON and it's a 200 OK, it might be a redirect HTML
+                            if(response.ok && text.includes('<html')) {
+                                // Handle HTML response (likely a redirect page)
+                                return { success: true, html_response: true };
+                            }
+                            return { success: true, message: "Registration successful!" };
+                        }
+                    });
+                }
+            })
+            .then(data => {
+                console.log('Registration successful:', data);
+                
+                // Show success message to user
+                showSuccessMessage(data.message || 'Registration successful! Please check your email to verify your account.');
+                
+                // If server provided HTML, we might need to handle a redirect
+                if (data.html_response) {
+                    // Either redirect to login page or replace document with response
+                    window.location.href = '/login/';
+                    return;
+                }
+                
+                // Optional: Redirect after successful registration
+                if (data.redirect_url) {
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    // Default redirect if none provided
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Registration error:', error);
+                showErrorMessage(error.message || 'Registration failed. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            });
         });
     }
 }
@@ -151,7 +230,6 @@ function setupEmailValidation() {
         // Debounce function to prevent too many requests
         let debounceTimeout;
         
-        // Add event listener for email field
         emailField.addEventListener('input', function() {
             const email = this.value.trim();
             
@@ -254,32 +332,6 @@ function validateName() {
     }
     
     removeError(nameInput);
-    return true;
-}
-
-/**
- * Validate the username field
- * @returns {boolean} True if valid, false otherwise
- */
-function validateUsername() {
-    const usernameInput = document.getElementById('username');
-    if (!usernameInput) return true;
-    
-    const username = usernameInput.value.trim();
-    
-    if (username.length < 4) {
-        showError(usernameInput, 'Username must be at least 4 characters');
-        return false;
-    }
-    
-    // Only allow alphanumeric characters and underscore
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!usernameRegex.test(username)) {
-        showError(usernameInput, 'Username can only contain letters, numbers, and underscores');
-        return false;
-    }
-    
-    removeError(usernameInput);
     return true;
 }
 
@@ -388,6 +440,66 @@ function removeError(input) {
     
     formGroup.classList.remove('error');
     input.classList.remove('error-input');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const signInForm = document.getElementById('signInForm');
+  
+  if (signInForm) {
+    signInForm.addEventListener('submit', function(e) {
+      const firstNameInput = document.getElementById('first-name');
+      const lastNameInput = document.getElementById('last-name');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirm-password');
+      
+      // Form validation
+      if (!firstNameInput.value.trim()) {
+        e.preventDefault();
+        alert('Please enter your first name');
+        firstNameInput.focus();
+        return;
+      }
+      
+      if (!lastNameInput.value.trim()) {
+        e.preventDefault();
+        alert('Please enter your last name');
+        lastNameInput.focus();
+        return;
+      }
+      
+      if (!emailInput.value.trim()) {
+        e.preventDefault();
+        alert('Please enter your email address');
+        emailInput.focus();
+        return;
+      }
+      
+      // Check if passwords match
+      if (passwordInput.value !== confirmPasswordInput.value) {
+        e.preventDefault();
+        alert('Passwords do not match');
+        confirmPasswordInput.focus();
+        return;
+      }
+    });
+  }
+});
+
+// Helper function to validate a generic field
+function validateField(fieldId, errorMessage) {
+    const input = document.getElementById(fieldId);
+    if (!input) return true;
+    
+    const value = input.value.trim();
+    
+    if (!value) {
+        showError(input, errorMessage);
+        return false;
+    }
+    
+    removeError(input);
+    return true;
 }
 
 
